@@ -180,7 +180,7 @@ func toolBody(call ToolCall) []Line {
 // confirmationLine is the user's verdict on a tool_confirmation; false when
 // it carries neither allow nor deny.
 func confirmationLine(ev Event) (Line, bool) {
-	switch ev.Result {
+	switch ev.AsUserToolConfirmation().Result {
 	case "allow":
 		return Line{LineAllow, "Allowed"}, true
 	case "deny":

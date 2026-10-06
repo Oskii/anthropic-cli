@@ -25,7 +25,7 @@ var betaVaultsCredentialsCreate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.Flag[map[string]any]{
 			Name:     "auth",
-			Usage:    "Authentication details for creating a credential.",
+			Usage:    "Authentication configuration for the credential.",
 			Required: true,
 			BodyPath: "auth",
 		},
@@ -158,7 +158,7 @@ var betaVaultsCredentialsUpdate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.Flag[map[string]any]{
 			Name:     "auth",
-			Usage:    "Updated authentication details for a credential.",
+			Usage:    "Updated authentication configuration. The `type` is immutable; the variant sent must match the stored credential's type.",
 			BodyPath: "auth",
 		},
 		&requestflag.Flag[*string]{

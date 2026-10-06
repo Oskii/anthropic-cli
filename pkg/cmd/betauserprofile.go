@@ -19,7 +19,7 @@ var betaUserProfilesCreate = requestflag.WithInnerFlags(cli.Command{
 	Flags: []cli.Flag{
 		&requestflag.Flag[string]{
 			Name:     "access-type",
-			Usage:    "How the platform uses the API on behalf of the entity this profile represents. `application`: the platform sells a product that uses the API behind the scenes, and the profile represents an individual end-user of that product. `passthrough`: the platform resells raw inference, and the profile identifies the resold-to company.",
+			Usage:    "How the platform uses the API for this entity. `application` (default): the profile represents an individual end-user of the platform's product. `passthrough`: the profile identifies a company the platform resells Claude access to.",
 			BodyPath: "access_type",
 		},
 		&requestflag.Flag[*string]{
@@ -33,7 +33,7 @@ var betaUserProfilesCreate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.Flag[any]{
 			Name:     "external-user-onboarded-at",
-			Usage:    "A timestamp in RFC 3339 format",
+			Usage:    "When the entity this profile represents opened its account with the platform, in RFC 3339 format: for an `application` profile, when the end-user signed up; for a `passthrough` profile, when the company became the platform's customer. Must be a complete timestamp no more than 1 minute in the future. Optional. Accepted under the `user-profiles-2026-08-18` beta header; under `user-profiles-2026-09-04` send `external_user_details.onboarded_at` instead.",
 			BodyPath: "external_user_onboarded_at",
 		},
 		&requestflag.Flag[map[string]any]{
@@ -63,7 +63,7 @@ var betaUserProfilesCreate = requestflag.WithInnerFlags(cli.Command{
 	"external-user-details": {
 		&requestflag.InnerFlag[*string]{
 			Name:       "external-user-details.account-status",
-			Usage:      "The status of the entity's account on the platform, as the platform states it: `active`; `suspended`, when the platform has restricted the account and may restore it; or `blocked`, when the platform has barred it. It records the platform's decision only; the statuses in `trust_grants` are Anthropic's and do not follow it.",
+			Usage:      "The status of the entity's account on the platform: `active`, `suspended` or `blocked`.",
 			InnerField: "account_status",
 		},
 		&requestflag.InnerFlag[*string]{
@@ -78,7 +78,7 @@ var betaUserProfilesCreate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.InnerFlag[*string]{
 			Name:       "external-user-details.entity-type",
-			Usage:      "What kind of entity the profile represents, as the platform states it: `individual`, `business`, `non_profit` or `government`.",
+			Usage:      "What kind of entity the profile represents: `individual`, `business`, `non_profit` or `government`.",
 			InnerField: "entity_type",
 		},
 		&requestflag.InnerFlag[*string]{
@@ -88,7 +88,7 @@ var betaUserProfilesCreate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.InnerFlag[any]{
 			Name:       "external-user-details.onboarded-at",
-			Usage:      "A timestamp in RFC 3339 format",
+			Usage:      "When the entity opened its account with the platform, in RFC 3339 format: for an `application` profile, when the end-user signed up; for a `passthrough` profile, when the company became the platform's customer. Must be a complete timestamp no more than 1 minute in the future.",
 			InnerField: "onboarded_at",
 		},
 		&requestflag.InnerFlag[*string]{
@@ -138,7 +138,7 @@ var betaUserProfilesUpdate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.Flag[*string]{
 			Name:     "access-type",
-			Usage:    "How the platform uses the API on behalf of the entity this profile represents. `application`: the platform sells a product that uses the API behind the scenes, and the profile represents an individual end-user of that product. `passthrough`: the platform resells raw inference, and the profile identifies the resold-to company.",
+			Usage:    "If present, replaces the stored access type. Omit to leave unchanged.",
 			BodyPath: "access_type",
 		},
 		&requestflag.Flag[*string]{
@@ -152,7 +152,7 @@ var betaUserProfilesUpdate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.Flag[any]{
 			Name:     "external-user-onboarded-at",
-			Usage:    "A timestamp in RFC 3339 format",
+			Usage:    "If present, replaces the stored account creation time. Omit to leave unchanged; once set, the value cannot be cleared and `null` is rejected. Must be a complete RFC 3339 timestamp no more than 1 minute in the future. Accepted under the `user-profiles-2026-08-18` beta header; under `user-profiles-2026-09-04` send `external_user_details.onboarded_at` instead.",
 			BodyPath: "external_user_onboarded_at",
 		},
 		&requestflag.Flag[map[string]any]{
@@ -182,7 +182,7 @@ var betaUserProfilesUpdate = requestflag.WithInnerFlags(cli.Command{
 	"external-user-details": {
 		&requestflag.InnerFlag[*string]{
 			Name:       "external-user-details.account-status",
-			Usage:      "The status of the entity's account on the platform, as the platform states it: `active`; `suspended`, when the platform has restricted the account and may restore it; or `blocked`, when the platform has barred it. It records the platform's decision only; the statuses in `trust_grants` are Anthropic's and do not follow it.",
+			Usage:      "The status of the entity's account on the platform: `active`, `suspended` or `blocked`.",
 			InnerField: "account_status",
 		},
 		&requestflag.InnerFlag[*string]{
@@ -197,7 +197,7 @@ var betaUserProfilesUpdate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.InnerFlag[*string]{
 			Name:       "external-user-details.entity-type",
-			Usage:      "What kind of entity the profile represents, as the platform states it: `individual`, `business`, `non_profit` or `government`.",
+			Usage:      "What kind of entity the profile represents: `individual`, `business`, `non_profit` or `government`.",
 			InnerField: "entity_type",
 		},
 		&requestflag.InnerFlag[*string]{
@@ -207,7 +207,7 @@ var betaUserProfilesUpdate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.InnerFlag[any]{
 			Name:       "external-user-details.onboarded-at",
-			Usage:      "A timestamp in RFC 3339 format",
+			Usage:      "When the entity opened its account with the platform, in RFC 3339 format: for an `application` profile, when the end-user signed up; for a `passthrough` profile, when the company became the platform's customer. Must be a complete timestamp no more than 1 minute in the future.",
 			InnerField: "onboarded_at",
 		},
 		&requestflag.InnerFlag[*string]{

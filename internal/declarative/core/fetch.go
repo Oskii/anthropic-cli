@@ -190,7 +190,10 @@ func (g *GitHubFetcher) fetch(ctx context.Context, rawURL string, pin URLPin) (*
 		return hit, nil
 	}
 
-	root := filepath.Join(g.CacheDir, ref.Owner+"-"+ref.Repo+"-"+sha[:12])
+	root, err := g.cacheEntry(ref, sha)
+	if err != nil {
+		return nil, err
+	}
 	if _, err := os.Stat(root); err != nil {
 		if err := g.downloadTarball(ctx, ref, sha, root); err != nil {
 			return nil, err
@@ -287,6 +290,25 @@ func (g *GitHubFetcher) resolveCommit(ctx context.Context, ref githubRef, gitRef
 		return "", fmt.Errorf("no commit found for %s/%s@%s", ref.Owner, ref.Repo, gitRef)
 	}
 	return commit.SHA, nil
+}
+
+// cacheEntry is the directory the repository at sha is unpacked into. It sits
+// under one directory per repository and one per full SHA: two commits can
+// share a shorter prefix, and joining owner and repo with a hyphen cannot tell
+// a-b/c from a/b-c. Its own name keeps the hyphenated 12-character form: a
+// skill at a repository root with no name of its own is displayed under this
+// name, and a skill's display name cannot change once it is created.
+func (g *GitHubFetcher) cacheEntry(ref githubRef, sha string) (string, error) {
+	name := ref.Owner + "-" + ref.Repo + "-" + sha[:12]
+	// Owner and repo come from a URL; on Windows a backslash in either could
+	// place the entry outside the cache.
+	if strings.ContainsAny(name, `/\`) {
+		return "", fmt.Errorf("%s/%s is not a valid repository name: it contains a path separator", ref.Owner, ref.Repo)
+	}
+	// Escaping turns the "/" into "%2F", so the repository is one path element
+	// that no other owner and repo can spell.
+	repo := url.QueryEscape(ref.Owner + "/" + ref.Repo)
+	return filepath.Join(g.CacheDir, repo, sha, name), nil
 }
 
 func (g *GitHubFetcher) downloadTarball(ctx context.Context, ref githubRef, sha, dest string) error {

@@ -99,7 +99,7 @@ type ToolCall struct {
 func (c ToolCall) Lifecycle() Lifecycle {
 	permission := c.Use.EvaluatedPermission
 	switch {
-	case permission == "deny" || (c.Confirmation != nil && c.Confirmation.Result == "deny"):
+	case permission == "deny" || (c.Confirmation != nil && c.Confirmation.AsUserToolConfirmation().Result == "deny"):
 		return Denied
 	case c.Result != nil && c.Result.IsError:
 		return Failed
