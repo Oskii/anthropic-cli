@@ -1,0 +1,68 @@
+package cmd
+
+import (
+	"testing"
+
+	"github.com/anthropics/anthropic-cli/internal/mocktest"
+)
+
+func TestOrganizationUsersRetrieve(t *testing.T) {
+	t.Run("regular flags", func(t *testing.T) {
+		mocktest.TestRunMockTestWithFlags(
+			t,
+			"--api-key", "string",
+			"organization:users", "retrieve",
+			"--user-id", "user_id",
+		)
+	})
+}
+
+func TestOrganizationUsersUpdate(t *testing.T) {
+	t.Run("regular flags", func(t *testing.T) {
+		mocktest.TestRunMockTestWithFlags(
+			t,
+			"--api-key", "string",
+			"organization:users", "update",
+			"--user-id", "user_id",
+			"--role", "user",
+		)
+	})
+
+	t.Run("piping data", func(t *testing.T) {
+		// Test piping YAML data over stdin
+		pipeData := []byte("role: user")
+		mocktest.TestRunMockTestWithPipeAndFlags(
+			t, pipeData,
+			"--api-key", "string",
+			"organization:users", "update",
+			"--user-id", "user_id",
+		)
+	})
+}
+
+func TestOrganizationUsersList(t *testing.T) {
+	t.Run("regular flags", func(t *testing.T) {
+		mocktest.TestRunMockTestWithFlags(
+			t,
+			"--api-key", "string",
+			"organization:users", "list",
+			"--max-items", "10",
+			"--after-id", "after_id",
+			"--before-id", "before_id",
+			"--email", "dev@stainless.com",
+			"--limit", "1",
+			"--role", "string",
+		)
+	})
+}
+
+func TestOrganizationUsersRemove(t *testing.T) {
+	t.Run("regular flags", func(t *testing.T) {
+		mocktest.TestRunMockTestWithFlags(
+			t,
+			"--api-key", "string",
+			"organization:users", "remove",
+			"--user-id", "user_id",
+		)
+	})
+}

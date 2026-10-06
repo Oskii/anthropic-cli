@@ -125,7 +125,7 @@ func nodeRows(node timeline.Node, afterTurn bool, opts renderOpts) []string {
 	case timeline.NodeOutcome:
 		body := stDim.Render(opts.SpinnerFrame + " Grading…")
 		if end := node.OutcomeEnd; end != nil {
-			body = "Grading → " + stBold.Render(timeline.Sanitize(end.Result)) + ": " + firstLine(timeline.EventText(*end))
+			body = "Grading → " + stBold.Render(timeline.Sanitize(end.AsSpanOutcomeEvaluationEnd().Result)) + ": " + firstLine(timeline.EventText(*end))
 		}
 		return box(stSpan, stSpan.Render("Outcome"), []string{body}, width)
 	case timeline.NodeError:

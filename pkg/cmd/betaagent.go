@@ -46,7 +46,7 @@ var betaAgentsCreate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.Flag[map[string]any]{
 			Name:     "multiagent",
-			Usage:    "A coordinator topology: the session's primary thread orchestrates work by spawning session threads, each running an agent drawn from the `agents` roster.",
+			Usage:    "Multiagent orchestration configuration. Currently supports the `coordinator` topology.",
 			BodyPath: "multiagent",
 		},
 		&requestflag.Flag[[]map[string]any]{
@@ -95,7 +95,7 @@ var betaAgentsCreate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.InnerFlag[*string]{
 			Name:       "model.speed",
-			Usage:      "Inference speed mode. `fast` provides significantly faster output token generation at premium pricing. Not all models support `fast`; invalid combinations are rejected at create time.",
+			Usage:      "Inference speed mode. Defaults to `standard`.",
 			InnerField: "speed",
 		},
 	},
@@ -247,7 +247,7 @@ var betaAgentsUpdate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.Flag[map[string]any]{
 			Name:     "multiagent",
-			Usage:    "A coordinator topology: the session's primary thread orchestrates work by spawning session threads, each running an agent drawn from the `agents` roster.",
+			Usage:    "Multiagent orchestration configuration. Currently supports the `coordinator` topology.",
 			BodyPath: "multiagent",
 		},
 		&requestflag.Flag[string]{
@@ -326,7 +326,7 @@ var betaAgentsUpdate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.InnerFlag[*string]{
 			Name:       "model.speed",
-			Usage:      "Inference speed mode. `fast` provides significantly faster output token generation at premium pricing. Not all models support `fast`; invalid combinations are rejected at create time.",
+			Usage:      "Inference speed mode. Defaults to `standard`.",
 			InnerField: "speed",
 		},
 	},
