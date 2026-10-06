@@ -77,7 +77,7 @@ var betaDreamsCreate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.InnerFlag[*string]{
 			Name:       "model.speed",
-			Usage:      "Inference speed mode. `fast` provides significantly faster output token generation at premium pricing. Not all models support `fast`; invalid combinations are rejected at create time.",
+			Usage:      "How fast the model generates output for the dream. Defaults to `standard`.\n\nDreams accept only `standard`.",
 			InnerField: "speed",
 		},
 	},

@@ -1,5 +1,61 @@
 # Changelog
 
+## 1.38.0 (2026-09-30)
+
+Full Changelog: [v1.37.0...v1.38.0](https://github.com/anthropics/anthropic-cli/compare/v1.37.0...v1.38.0)
+
+### Features
+
+* **api:** add list spend limits endpoint ([6ccede8](https://github.com/anthropics/anthropic-cli/commit/6ccede8da03b13efc15a114dc8354faf3b5b9cca))
+
+
+### Bug Fixes
+
+* **apply:** key the remote skill cache by full commit SHA ([#147](https://github.com/anthropics/anthropic-cli/issues/147)) ([5cfdca2](https://github.com/anthropics/anthropic-cli/commit/5cfdca2d4fa1d470698dec1d283eec68c6c39ab2))
+
+## 1.37.0 (2026-09-30)
+
+Full Changelog: [v1.36.0...v1.37.0](https://github.com/anthropics/anthropic-cli/compare/v1.36.0...v1.37.0)
+
+### Features
+
+* **api:** add Claude Enterprise analytics, spend limits, and RBAC groups and roles to the Admin API ([141981a](https://github.com/anthropics/anthropic-cli/commit/141981ab5659111e1e70fd479c7f4fa4edb84f67))
+* **api:** add per-user usage and cost reports to the Admin API analytics ([1ef485b](https://github.com/anthropics/anthropic-cli/commit/1ef485b54a62ef30eafee37dcb5a76a431344bc9))
+* **api:** add Plugins and Plugin Marketplaces to the Admin API ([a988455](https://github.com/anthropics/anthropic-cli/commit/a988455d725147df0f9a4652486a0e6b9f55ed42))
+* **api:** allow removing a plugin's org-wide installation setting ([e68aebc](https://github.com/anthropics/anthropic-cli/commit/e68aebc39a73e0cd96aab11208d2e83394b4ebf5))
+* **api:** Organization API endpoints are now GA ([a96980c](https://github.com/anthropics/anthropic-cli/commit/a96980c82bb0309f0c49ba35cba20e558720e5e3))
+
+## 1.36.0 (2026-09-28)
+
+Full Changelog: [v1.35.0...v1.36.0](https://github.com/anthropics/anthropic-cli/compare/v1.35.0...v1.36.0)
+
+### Features
+
+* **api:** add between_tools thinking type ([bad6c55](https://github.com/anthropics/anthropic-cli/commit/bad6c5502abe9735f08b222487c58312c5e0a938))
+* **api:** add claude-sonnet-5-5 ([a91c723](https://github.com/anthropics/anthropic-cli/commit/a91c723af8ca474f9a67f042137a2d205f93402f))
+* **api:** add include_inherited and source to workspace rate limits ([15f557f](https://github.com/anthropics/anthropic-cli/commit/15f557f314cff42d340b37eb9d14f4854cbcedf1))
+* **api:** add typed event type values to the Managed Agents events list filter ([eb3ae68](https://github.com/anthropics/anthropic-cli/commit/eb3ae68266aa0a3c1f738900445f4273b9dee5a2))
+* **api:** cache diagnostics GA — diagnostics on Message / MessageCreateParams ([ef7f12e](https://github.com/anthropics/anthropic-cli/commit/ef7f12efde5413759d7c71110a3514f20f11dcf9))
+
+
+### Bug Fixes
+
+* **sessions:** read event results through the event variant ([#129](https://github.com/anthropics/anthropic-cli/issues/129)) ([d6c0f7d](https://github.com/anthropics/anthropic-cli/commit/d6c0f7dc2fd2a68e4862d97e0a2b62e591ffb5f8))
+
+
+### Chores
+
+* bump go sdk to v1.76.0 ([3bcd2e9](https://github.com/anthropics/anthropic-cli/commit/3bcd2e94c2b6d96f7b8576bc5198ebb02ee7487b))
+* **ci:** build only the shipped targets in CI ([d0032df](https://github.com/anthropics/anthropic-cli/commit/d0032df1b34a9169ffcded14ca6be6fa79f82180))
+* **ci:** choose the CI runner by repository ([9e3bcc9](https://github.com/anthropics/anthropic-cli/commit/9e3bcc90e8678f740aabac3ff83efd4e4f39dd79))
+* **docs:** clarify that stream: true returns the raw event stream ([e8d753f](https://github.com/anthropics/anthropic-cli/commit/e8d753f58ce150ad61c3aa9bdb656f60781d9272))
+* **internal:** run bootstrap once, after linking the Go SDK, in CI ([54499e2](https://github.com/anthropics/anthropic-cli/commit/54499e21c7f47ddbc6d4f6d6b708847b98ccdedc))
+
+
+### Documentation
+
+* **api:** prefer each field's own description over its shared type's ([9b6c678](https://github.com/anthropics/anthropic-cli/commit/9b6c6783bc789783a00dd314e25765a62285859f))
+
 ## 1.35.0 (2026-09-22)
 
 Full Changelog: [v1.34.0...v1.35.0](https://github.com/anthropics/anthropic-cli/compare/v1.34.0...v1.35.0)

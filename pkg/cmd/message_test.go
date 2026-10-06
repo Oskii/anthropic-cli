@@ -19,6 +19,7 @@ func TestMessagesCreate(t *testing.T) {
 			"--model", "claude-opus-5",
 			"--cache-control", "{type: ephemeral, ttl: 5m}",
 			"--container", "{id: id, skills: [{skill_id: pdf, type: anthropic, version: latest}]}",
+			"--diagnostics", "{previous_message_id: previous_message_id}",
 			"--inference-geo", "inference_geo",
 			"--metadata", "{user_id: 13803d75-b4b5-4c3e-b2a2-6f21399b021b}",
 			"--output-config", "{effort: low, format: {schema: {foo: bar}, type: json_schema}}",
@@ -54,6 +55,7 @@ func TestMessagesCreate(t *testing.T) {
 			"--cache-control.type", "ephemeral",
 			"--cache-control.ttl", "5m",
 			"--container", "{id: id, skills: [{skill_id: pdf, type: anthropic, version: latest}]}",
+			"--diagnostics.previous-message-id", "previous_message_id",
 			"--inference-geo", "inference_geo",
 			"--metadata.user-id", "13803d75-b4b5-4c3e-b2a2-6f21399b021b",
 			"--output-config.effort", "low",
@@ -102,6 +104,8 @@ func TestMessagesCreate(t *testing.T) {
 			"    - skill_id: pdf\n" +
 			"      type: anthropic\n" +
 			"      version: latest\n" +
+			"diagnostics:\n" +
+			"  previous_message_id: previous_message_id\n" +
 			"inference_geo: inference_geo\n" +
 			"metadata:\n" +
 			"  user_id: 13803d75-b4b5-4c3e-b2a2-6f21399b021b\n" +

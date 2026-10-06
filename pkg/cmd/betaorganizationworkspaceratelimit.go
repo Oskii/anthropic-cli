@@ -14,7 +14,7 @@ import (
 
 var betaOrganizationWorkspacesRateLimitsList = cli.Command{
 	Name:    "list",
-	Usage:   "List rate-limit overrides configured for a workspace.",
+	Usage:   "List a workspace's rate limits.",
 	Suggest: true,
 	Flags: []cli.Flag{
 		&requestflag.Flag[string]{
@@ -27,6 +27,12 @@ var betaOrganizationWorkspacesRateLimitsList = cli.Command{
 			Name:      "group-type",
 			Usage:     "Filter by group type.",
 			QueryPath: "group_type",
+		},
+		&requestflag.Flag[bool]{
+			Name:      "include-inherited",
+			Usage:     "Also list the limiter values the workspace inherits from the organization, including groups with no workspace-level override.",
+			Default:   false,
+			QueryPath: "include_inherited",
 		},
 		&requestflag.Flag[int64]{
 			Name:      "limit",

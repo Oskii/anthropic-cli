@@ -63,7 +63,7 @@ var betaDeploymentsCreate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.Flag[map[string]any]{
 			Name:     "schedule",
-			Usage:    "5-field POSIX cron schedule. Literal wall-clock matching in the configured timezone.",
+			Usage:    "A recurring schedule. Discriminated union — only cron is supported currently.",
 			BodyPath: "schedule",
 		},
 		&requestflag.Flag[[]string]{
@@ -147,7 +147,7 @@ var betaDeploymentsCreate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.InnerFlag[*string]{
 			Name:       "resource.access",
-			Usage:      "Access mode for an attached memory store.",
+			Usage:      "Access mode for the mounted store. Defaults to read_write. read_only mounts the store as a read-only filesystem.",
 			InnerField: "access",
 		},
 		&requestflag.InnerFlag[string]{
@@ -284,7 +284,7 @@ var betaDeploymentsUpdate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.Flag[map[string]any]{
 			Name:     "schedule",
-			Usage:    "5-field POSIX cron schedule. Literal wall-clock matching in the configured timezone.",
+			Usage:    "A recurring schedule. Discriminated union — only cron is supported currently.",
 			BodyPath: "schedule",
 		},
 		&requestflag.Flag[any]{
@@ -369,7 +369,7 @@ var betaDeploymentsUpdate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.InnerFlag[*string]{
 			Name:                  "resource.access",
-			Usage:                 "Access mode for an attached memory store.",
+			Usage:                 "Access mode for the mounted store. Defaults to read_write. read_only mounts the store as a read-only filesystem.",
 			InnerField:            "access",
 			OuterIsArrayOfObjects: true,
 		},

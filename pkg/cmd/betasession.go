@@ -156,7 +156,7 @@ var betaSessionsCreate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.InnerFlag[*string]{
 			Name:       "resource.access",
-			Usage:      "Access mode for an attached memory store.",
+			Usage:      "Access mode for the mounted store. Defaults to read_write. read_only mounts the store as a read-only filesystem.",
 			InnerField: "access",
 		},
 		&requestflag.InnerFlag[string]{

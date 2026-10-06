@@ -21,7 +21,19 @@ builds:
 
   - id: linux
     goos: [linux]
-    goarch: ['386', arm, amd64, arm64]
+    goarch: [amd64, arm64]
+    env:
+      - CGO_ENABLED=0
+    binary: '{{ .ProjectName }}'
+    main: ./cmd/ant/main.go
+    mod_timestamp: '{{ .CommitTimestamp }}'
+    ldflags:
+      - '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}}'
+
+  # CI builds only the macos/linux/windows ids; the *-extra ids are release-only.
+  - id: linux-extra
+    goos: [linux]
+    goarch: ['386', arm]
     env:
       - CGO_ENABLED=0
     binary: '{{ .ProjectName }}'
@@ -32,7 +44,16 @@ builds:
 
   - id: windows
     goos: [windows]
-    goarch: ['386', amd64, arm64]
+    goarch: [amd64, arm64]
+    binary: '{{ .ProjectName }}'
+    main: ./cmd/ant/main.go
+    mod_timestamp: '{{ .CommitTimestamp }}'
+    ldflags:
+      - '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}}'
+
+  - id: windows-extra
+    goos: [windows]
+    goarch: ['386']
     binary: '{{ .ProjectName }}'
     main: ./cmd/ant/main.go
     mod_timestamp: '{{ .CommitTimestamp }}'
@@ -41,7 +62,7 @@ builds:
 
 archives:
   - id: linux-archive
-    ids: [linux]
+    ids: [linux, linux-extra]
     name_template: '{{ .ProjectName }}_{{ .Version }}_linux_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     formats: [tar.gz]
     files:
@@ -55,7 +76,7 @@ archives:
       - completions/*
       - man/*/*
   - id: windows-archive
-    ids: [windows]
+    ids: [windows, windows-extra]
     name_template: '{{ .ProjectName }}_{{ .Version }}_windows_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     formats: [zip]
     files:

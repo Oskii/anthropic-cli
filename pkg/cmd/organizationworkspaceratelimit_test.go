@@ -1,0 +1,23 @@
+package cmd
+
+import (
+	"testing"
+
+	"github.com/anthropics/anthropic-cli/internal/mocktest"
+)
+
+func TestOrganizationWorkspacesRateLimitsList(t *testing.T) {
+	t.Run("regular flags", func(t *testing.T) {
+		mocktest.TestRunMockTestWithFlags(
+			t,
+			"--api-key", "string",
+			"organization:workspaces:rate-limits", "list",
+			"--max-items", "10",
+			"--workspace-id", "workspace_id",
+			"--group-type", "batch",
+			"--include-inherited=true",
+			"--limit", "1",
+			"--page", "page",
+		)
+	})
+}
