@@ -1,0 +1,96 @@
+package cmd
+
+import (
+	"testing"
+
+	"github.com/anthropics/anthropic-cli/internal/mocktest"
+)
+
+func TestOrganizationWorkspacesServiceAccountsRetrieve(t *testing.T) {
+	t.Run("regular flags", func(t *testing.T) {
+		mocktest.TestRunMockTestWithFlags(
+			t,
+			"--api-key", "string",
+			"organization:workspaces:service-accounts", "retrieve",
+			"--workspace-id", "workspace_id",
+			"--service-account-id", "service_account_id",
+		)
+	})
+}
+
+func TestOrganizationWorkspacesServiceAccountsUpdate(t *testing.T) {
+	t.Run("regular flags", func(t *testing.T) {
+		mocktest.TestRunMockTestWithFlags(
+			t,
+			"--api-key", "string",
+			"organization:workspaces:service-accounts", "update",
+			"--workspace-id", "workspace_id",
+			"--service-account-id", "service_account_id",
+			"--workspace-role", "workspace_admin",
+		)
+	})
+
+	t.Run("piping data", func(t *testing.T) {
+		// Test piping YAML data over stdin
+		pipeData := []byte("workspace_role: workspace_admin")
+		mocktest.TestRunMockTestWithPipeAndFlags(
+			t, pipeData,
+			"--api-key", "string",
+			"organization:workspaces:service-accounts", "update",
+			"--workspace-id", "workspace_id",
+			"--service-account-id", "service_account_id",
+		)
+	})
+}
+
+func TestOrganizationWorkspacesServiceAccountsList(t *testing.T) {
+	t.Run("regular flags", func(t *testing.T) {
+		mocktest.TestRunMockTestWithFlags(
+			t,
+			"--api-key", "string",
+			"organization:workspaces:service-accounts", "list",
+			"--max-items", "10",
+			"--workspace-id", "workspace_id",
+			"--limit", "1",
+			"--page", "page",
+		)
+	})
+}
+
+func TestOrganizationWorkspacesServiceAccountsAdd(t *testing.T) {
+	t.Run("regular flags", func(t *testing.T) {
+		mocktest.TestRunMockTestWithFlags(
+			t,
+			"--api-key", "string",
+			"organization:workspaces:service-accounts", "add",
+			"--workspace-id", "workspace_id",
+			"--service-account-id", "service_account_id",
+			"--workspace-role", "workspace_admin",
+		)
+	})
+
+	t.Run("piping data", func(t *testing.T) {
+		// Test piping YAML data over stdin
+		pipeData := []byte("" +
+			"service_account_id: service_account_id\n" +
+			"workspace_role: workspace_admin\n")
+		mocktest.TestRunMockTestWithPipeAndFlags(
+			t, pipeData,
+			"--api-key", "string",
+			"organization:workspaces:service-accounts", "add",
+			"--workspace-id", "workspace_id",
+		)
+	})
+}
+
+func TestOrganizationWorkspacesServiceAccountsRemove(t *testing.T) {
+	t.Run("regular flags", func(t *testing.T) {
+		mocktest.TestRunMockTestWithFlags(
+			t,
+			"--api-key", "string",
+			"organization:workspaces:service-accounts", "remove",
+			"--workspace-id", "workspace_id",
+			"--service-account-id", "service_account_id",
+		)
+	})
+}

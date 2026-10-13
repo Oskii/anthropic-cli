@@ -44,6 +44,11 @@ var messagesCreate = requestflag.WithInnerFlags(cli.Command{
 			Usage:    "Container identifier for reuse across requests.",
 			BodyPath: "container",
 		},
+		&requestflag.Flag[map[string]any]{
+			Name:     "diagnostics",
+			Usage:    "Request-level diagnostics. Currently carries the previous response\nid for prompt-cache divergence reporting.",
+			BodyPath: "diagnostics",
+		},
 		&requestflag.Flag[*string]{
 			Name:     "inference-geo",
 			Usage:    "Specifies the geographic region for inference processing. If not specified, the workspace's `default_inference_geo` is used.",
@@ -69,7 +74,7 @@ var messagesCreate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.Flag[bool]{
 			Name:     "stream",
-			Usage:    "Whether to incrementally stream the response using server-sent events.\n\nSee [streaming](https://platform.claude.com/docs/en/build-with-claude/streaming) for details.",
+			Usage:    "Whether to incrementally stream the response using server-sent events. When `true`, SDKs return a raw event stream.\n\nIn the TypeScript, Python and Ruby SDKs, the recommended way to stream is `messages.stream()`. It sets `stream` for you and accumulates the events into the final message. See [Streaming with SDKs](https://platform.claude.com/docs/en/build-with-claude/streaming#streaming-with-sdks) for an example in each language.",
 			BodyPath: "stream",
 		},
 		&requestflag.Flag[any]{
@@ -156,7 +161,15 @@ var messagesCreate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.InnerFlag[any]{
 			Name:       "container.skills",
+			Usage:      "List of skills to load in the container",
 			InnerField: "skills",
+		},
+	},
+	"diagnostics": {
+		&requestflag.InnerFlag[*string]{
+			Name:       "diagnostics.previous-message-id",
+			Usage:      "The `id` (`msg_...`) from this client's previous /v1/messages response. The server compares that request's prompt fingerprint against this one and returns `diagnostics.cache_miss_reason` when the prompt-cache prefix could not be reused. Pass `null` on the first turn to opt in without a prior message to compare.",
+			InnerField: "previous_message_id",
 		},
 	},
 	"metadata": {
@@ -169,7 +182,7 @@ var messagesCreate = requestflag.WithInnerFlags(cli.Command{
 	"output-config": {
 		&requestflag.InnerFlag[*string]{
 			Name:       "output-config.effort",
-			Usage:      "All possible effort levels.",
+			Usage:      "How much effort the model should put into its response. Higher effort levels may result in more thorough analysis but take longer.\n\nValid values are `low`, `medium`, `high`, `xhigh`, or `max`.",
 			InnerField: "effort",
 		},
 		&requestflag.InnerFlag[map[string]any]{
@@ -180,7 +193,7 @@ var messagesCreate = requestflag.WithInnerFlags(cli.Command{
 	"thinking": {
 		&requestflag.InnerFlag[string]{
 			Name:       "thinking.type",
-			Usage:      `Allowed values: "enabled", "disabled", "adaptive".`,
+			Usage:      `Allowed values: "enabled", "disabled", "between_tools", "adaptive".`,
 			InnerField: "type",
 		},
 		&requestflag.InnerFlag[int64]{
@@ -255,8 +268,9 @@ var messagesCreate = requestflag.WithInnerFlags(cli.Command{
 			Name:       "tool.input-examples",
 			InnerField: "input_examples",
 		},
-		&requestflag.InnerFlag[any]{
+		&requestflag.InnerFlag[map[string]any]{
 			Name:       "tool.input-schema",
+			Usage:      "[JSON schema](https://json-schema.org/draft/2020-12) for this tool's input.\n\nThis defines the shape of the `input` that your tool accepts and that the model will produce.",
 			InnerField: "input_schema",
 		},
 		&requestflag.InnerFlag[*int64]{
@@ -396,7 +410,7 @@ var messagesCountTokens = requestflag.WithInnerFlags(cli.Command{
 	"output-config": {
 		&requestflag.InnerFlag[*string]{
 			Name:       "output-config.effort",
-			Usage:      "All possible effort levels.",
+			Usage:      "How much effort the model should put into its response. Higher effort levels may result in more thorough analysis but take longer.\n\nValid values are `low`, `medium`, `high`, `xhigh`, or `max`.",
 			InnerField: "effort",
 		},
 		&requestflag.InnerFlag[map[string]any]{
@@ -407,7 +421,7 @@ var messagesCountTokens = requestflag.WithInnerFlags(cli.Command{
 	"thinking": {
 		&requestflag.InnerFlag[string]{
 			Name:       "thinking.type",
-			Usage:      `Allowed values: "enabled", "disabled", "adaptive".`,
+			Usage:      `Allowed values: "enabled", "disabled", "between_tools", "adaptive".`,
 			InnerField: "type",
 		},
 		&requestflag.InnerFlag[int64]{
@@ -482,8 +496,9 @@ var messagesCountTokens = requestflag.WithInnerFlags(cli.Command{
 			Name:       "tool.input-examples",
 			InnerField: "input_examples",
 		},
-		&requestflag.InnerFlag[any]{
+		&requestflag.InnerFlag[map[string]any]{
 			Name:       "tool.input-schema",
+			Usage:      "[JSON schema](https://json-schema.org/draft/2020-12) for this tool's input.\n\nThis defines the shape of the `input` that your tool accepts and that the model will produce.",
 			InnerField: "input_schema",
 		},
 		&requestflag.InnerFlag[*int64]{

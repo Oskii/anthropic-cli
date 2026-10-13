@@ -13,7 +13,7 @@ func TestBetaSessionsThreadsRetrieve(t *testing.T) {
 			"--api-key", "string",
 			"beta:sessions:threads", "retrieve",
 			"--session-id", "sesn_011CZkZAtmR3yMPDzynEDxu7",
-			"--thread-id", "sthr_011CZkZVWa6oIjw0rgXZpnBt",
+			"--thread-id", "sthr_011CZkZVWa6oJjw1rgXZpnBt",
 			"--beta", "message-batches-2024-09-24",
 			"--workspace-id", "wrkspc_011CZkZaBF1tNoB5wlCeusgy",
 		)
@@ -21,7 +21,6 @@ func TestBetaSessionsThreadsRetrieve(t *testing.T) {
 }
 
 func TestBetaSessionsThreadsList(t *testing.T) {
-	t.Skip("buildURL drops path-level query params")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
@@ -31,6 +30,7 @@ func TestBetaSessionsThreadsList(t *testing.T) {
 			"--session-id", "sesn_011CZkZAtmR3yMPDzynEDxu7",
 			"--limit", "0",
 			"--page", "page",
+			"--status", "running",
 			"--beta", "message-batches-2024-09-24",
 			"--workspace-id", "wrkspc_011CZkZaBF1tNoB5wlCeusgy",
 		)
@@ -44,7 +44,7 @@ func TestBetaSessionsThreadsArchive(t *testing.T) {
 			"--api-key", "string",
 			"beta:sessions:threads", "archive",
 			"--session-id", "sesn_011CZkZAtmR3yMPDzynEDxu7",
-			"--thread-id", "sthr_011CZkZVWa6oIjw0rgXZpnBt",
+			"--thread-id", "sthr_011CZkZVWa6oJjw1rgXZpnBt",
 			"--beta", "message-batches-2024-09-24",
 			"--workspace-id", "wrkspc_011CZkZaBF1tNoB5wlCeusgy",
 		)

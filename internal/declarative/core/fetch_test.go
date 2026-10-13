@@ -182,7 +182,7 @@ func TestPinnedFetchRefusesAPinThatEscapes(t *testing.T) {
 func TestPinnedFetchUsesTheRecordedSubpathWithoutAskingTheAPI(t *testing.T) {
 	sha := strings.Repeat("d", 40)
 	cache := t.TempDir()
-	writeTreeAt(t, filepath.Join(cache, "o-r-"+sha[:12]), map[string]string{
+	writeTreeAt(t, filepath.Join(cache, "o%2Fr", sha, "o-r-"+sha[:12]), map[string]string{
 		"pdf/SKILL.md":           "---\nname: pdf\n---\nbody\n",
 		"new-skill/pdf/notes.md": "a decoy the old probing code would have had to rule out\n",
 	})
@@ -192,6 +192,101 @@ func TestPinnedFetchUsesTheRecordedSubpathWithoutAskingTheAPI(t *testing.T) {
 		"https://github.com/o/r/tree/team/new-skill/pdf", URLPin{Revision: sha, Subpath: "pdf"})
 
 	require.NoError(t, err)
-	assert.Equal(t, filepath.Join(cache, "o-r-"+sha[:12], "pdf"), got.Dir)
+	assert.Equal(t, filepath.Join(cache, "o%2Fr", sha, "o-r-"+sha[:12], "pdf"), got.Dir)
 	assert.Equal(t, URLPin{Revision: sha, Subpath: "pdf"}, got.URLPin)
+}
+
+// tarballServer serves, for any commit of any repository, a one-skill archive
+// whose SKILL.md holds that commit's SHA, and counts the downloads.
+func tarballServer(t *testing.T) (*httptest.Server, *int) {
+	t.Helper()
+	downloads := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, sha, ok := strings.Cut(r.URL.Path, "/tarball/")
+		if !ok {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		downloads++
+		archive := tarGz(t, []*tar.Header{
+			{Name: "o-r-x/", Typeflag: tar.TypeDir, Mode: 0o755},
+			{Name: "o-r-x/skill/SKILL.md", Typeflag: tar.TypeReg, Size: int64(len(sha)), Mode: 0o644},
+		}, []string{"", sha})
+		_, _ = archive.WriteTo(w)
+	}))
+	t.Cleanup(server.Close)
+	return server, &downloads
+}
+
+func fetchSkill(t *testing.T, g *GitHubFetcher, sha string) string {
+	t.Helper()
+	body, _ := fetchSkillFrom(t, g, "o/r", sha)
+	return body
+}
+
+// fetchSkillFrom fetches the skill at sha from repo ("owner/name") and returns
+// its SKILL.md and the directory it was read from.
+func fetchSkillFrom(t *testing.T, g *GitHubFetcher, repo, sha string) (string, string) {
+	t.Helper()
+	got, err := g.Fetch(context.Background(), "https://github.com/"+repo+"/tree/main/skill", URLPin{Revision: sha, Subpath: "skill"})
+	require.NoError(t, err)
+	body, err := os.ReadFile(filepath.Join(got.Dir, "SKILL.md"))
+	require.NoError(t, err)
+	return string(body), got.Dir
+}
+
+// Two commits can share a 12-character prefix; each must get its own files.
+func TestFetchKeepsCommitsWithTheSamePrefixApart(t *testing.T) {
+	server, downloads := tarballServer(t)
+	cache := t.TempDir()
+	first := "abcdef012345" + strings.Repeat("1", 28)
+	second := "abcdef012345" + strings.Repeat("2", 28)
+
+	g := &GitHubFetcher{HTTPClient: server.Client(), apiBase: server.URL, CacheDir: cache, cache: map[string]*FetchedURL{}}
+	assert.Equal(t, first, fetchSkill(t, g, first))
+	assert.Equal(t, second, fetchSkill(t, g, second))
+
+	// A later apply reuses both without downloading again.
+	g = &GitHubFetcher{HTTPClient: server.Client(), apiBase: server.URL, CacheDir: cache, cache: map[string]*FetchedURL{}}
+	assert.Equal(t, first, fetchSkill(t, g, first))
+	assert.Equal(t, second, fetchSkill(t, g, second))
+	assert.Equal(t, 2, *downloads)
+}
+
+// a-b/c and a/b-c hyphenate to the same name. Each must still get its own
+// entry, so that one repository cannot fill the entry another is read from.
+func TestFetchKeepsRepositoriesWithTheSameHyphenatedNameApart(t *testing.T) {
+	server, downloads := tarballServer(t)
+	sha := strings.Repeat("f", 40)
+	g := &GitHubFetcher{HTTPClient: server.Client(), apiBase: server.URL, CacheDir: t.TempDir(), cache: map[string]*FetchedURL{}}
+
+	firstBody, firstDir := fetchSkillFrom(t, g, "a-b/c", sha)
+	secondBody, secondDir := fetchSkillFrom(t, g, "a/b-c", sha)
+
+	assert.Equal(t, sha, firstBody)
+	assert.Equal(t, sha, secondBody)
+	assert.NotEqual(t, firstDir, secondDir)
+	assert.Equal(t, 2, *downloads)
+}
+
+// A skill at a repository root that sets no name is displayed under the name
+// of its cache entry, and a display name cannot change after the skill is
+// created, so the entry must keep the name earlier versions gave it.
+func TestFetchKeepsTheNameOfARepositoryRootEntry(t *testing.T) {
+	server, _ := tarballServer(t)
+	sha := strings.Repeat("e", 40)
+	g := &GitHubFetcher{HTTPClient: server.Client(), apiBase: server.URL, CacheDir: t.TempDir(), cache: map[string]*FetchedURL{}}
+
+	got, err := g.Fetch(context.Background(), "https://github.com/o/r", URLPin{Revision: sha})
+
+	require.NoError(t, err)
+	assert.Equal(t, "o-r-"+sha[:12], filepath.Base(got.Dir))
+}
+
+// A URL such as github.com/..%5C..%5Cx/r gives the owner "..\..\x", which on
+// Windows would put the cache entry outside the cache directory.
+func TestFetchRefusesAPathSeparatorInTheOwner(t *testing.T) {
+	g := &GitHubFetcher{CacheDir: t.TempDir(), cache: map[string]*FetchedURL{}}
+	_, err := g.Fetch(context.Background(), "https://github.com/..%5C..%5Cx/r/tree/main/skill", URLPin{Revision: strings.Repeat("a", 40), Subpath: "skill"})
+	require.ErrorContains(t, err, "contains a path separator")
 }

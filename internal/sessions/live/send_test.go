@@ -25,7 +25,7 @@ func TestConfirmShowsPlaceholderUntilEchoOrFailure(t *testing.T) {
 	assert.Equal(t, "local:confirm:tu1", u.Event.ID)
 	assert.Equal(t, "user.tool_confirmation", u.Event.Type)
 	assert.Equal(t, "tu1", u.Event.ToolUseID)
-	assert.Equal(t, "deny", u.Event.Result)
+	assert.EqualValues(t, "deny", u.Event.AsUserToolConfirmation().Result)
 	assert.Equal(t, "nope", u.Event.DenyMessage)
 	assert.True(t, u.Event.ProcessedAt.IsZero())
 	assert.Equal(t, []string{"tu1", "local:confirm:tu1?"}, ids(c.Snapshot()), "placeholder is visible before the POST returns")

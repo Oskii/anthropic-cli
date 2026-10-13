@@ -97,7 +97,7 @@ var betaMessagesCreate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.Flag[*string]{
 			Name:     "speed",
-			Usage:    "Inference speed mode. `fast` provides significantly faster output token generation at premium pricing. Not all models support `fast`; invalid combinations are rejected at create time.",
+			Usage:    "The inference speed mode for this request. `\"fast\"` enables high output-tokens-per-second inference.",
 			BodyPath: "speed",
 		},
 		&requestflag.Flag[[]string]{
@@ -107,7 +107,7 @@ var betaMessagesCreate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.Flag[bool]{
 			Name:     "stream",
-			Usage:    "Whether to incrementally stream the response using server-sent events.\n\nSee [streaming](https://platform.claude.com/docs/en/build-with-claude/streaming) for details.",
+			Usage:    "Whether to incrementally stream the response using server-sent events. When `true`, SDKs return a raw event stream.\n\nIn the TypeScript, Python and Ruby SDKs, the recommended way to stream is `messages.stream()`. It sets `stream` for you and accumulates the events into the final message. See [Streaming with SDKs](https://platform.claude.com/docs/en/build-with-claude/streaming#streaming-with-sdks) for an example in each language.",
 			BodyPath: "stream",
 		},
 		&requestflag.Flag[any]{
@@ -221,6 +221,7 @@ var betaMessagesCreate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.InnerFlag[any]{
 			Name:       "container.skills",
+			Usage:      "List of skills to load in the container",
 			InnerField: "skills",
 		},
 	},
@@ -283,7 +284,7 @@ var betaMessagesCreate = requestflag.WithInnerFlags(cli.Command{
 	"output-config": {
 		&requestflag.InnerFlag[*string]{
 			Name:       "output-config.effort",
-			Usage:      "All possible effort levels.",
+			Usage:      "How much effort the model should put into its response. Higher effort levels may result in more thorough analysis but take longer.\n\nValid values are `low`, `medium`, `high`, `xhigh`, or `max`.",
 			InnerField: "effort",
 		},
 		&requestflag.InnerFlag[map[string]any]{
@@ -311,7 +312,7 @@ var betaMessagesCreate = requestflag.WithInnerFlags(cli.Command{
 	"thinking": {
 		&requestflag.InnerFlag[string]{
 			Name:       "thinking.type",
-			Usage:      `Allowed values: "enabled", "disabled", "adaptive".`,
+			Usage:      `Allowed values: "enabled", "disabled", "between_tools", "adaptive".`,
 			InnerField: "type",
 		},
 		&requestflag.InnerFlag[map[string]any]{
@@ -420,8 +421,9 @@ var betaMessagesCreate = requestflag.WithInnerFlags(cli.Command{
 			Name:       "tool.input-examples",
 			InnerField: "input_examples",
 		},
-		&requestflag.InnerFlag[any]{
+		&requestflag.InnerFlag[map[string]any]{
 			Name:       "tool.input-schema",
+			Usage:      "[JSON schema](https://json-schema.org/draft/2020-12) for this tool's input.\n\nThis defines the shape of the `input` that your tool accepts and that the model will produce.",
 			InnerField: "input_schema",
 		},
 		&requestflag.InnerFlag[*int64]{
@@ -471,6 +473,7 @@ var betaMessagesCreate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.InnerFlag[any]{
 			Name:       "tool.tools",
+			Usage:      "The server's tool listing, pinned: when present, the server is not asked for its tools before sampling and exactly these entries, with `default_config` and `configs` applied, are the toolset's tools. Copy it from the `mcp_tool_listing` block of an earlier response.",
 			InnerField: "tools",
 		},
 		&requestflag.InnerFlag[*string]{
@@ -540,7 +543,7 @@ var betaMessagesCountTokens = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.Flag[*string]{
 			Name:     "speed",
-			Usage:    "Inference speed mode. `fast` provides significantly faster output token generation at premium pricing. Not all models support `fast`; invalid combinations are rejected at create time.",
+			Usage:    "The inference speed mode for this request. `\"fast\"` enables high output-tokens-per-second inference.",
 			BodyPath: "speed",
 		},
 		&requestflag.Flag[any]{
@@ -660,7 +663,7 @@ var betaMessagesCountTokens = requestflag.WithInnerFlags(cli.Command{
 	"output-config": {
 		&requestflag.InnerFlag[*string]{
 			Name:       "output-config.effort",
-			Usage:      "All possible effort levels.",
+			Usage:      "How much effort the model should put into its response. Higher effort levels may result in more thorough analysis but take longer.\n\nValid values are `low`, `medium`, `high`, `xhigh`, or `max`.",
 			InnerField: "effort",
 		},
 		&requestflag.InnerFlag[map[string]any]{
@@ -688,7 +691,7 @@ var betaMessagesCountTokens = requestflag.WithInnerFlags(cli.Command{
 	"thinking": {
 		&requestflag.InnerFlag[string]{
 			Name:       "thinking.type",
-			Usage:      `Allowed values: "enabled", "disabled", "adaptive".`,
+			Usage:      `Allowed values: "enabled", "disabled", "between_tools", "adaptive".`,
 			InnerField: "type",
 		},
 		&requestflag.InnerFlag[map[string]any]{
@@ -797,8 +800,9 @@ var betaMessagesCountTokens = requestflag.WithInnerFlags(cli.Command{
 			Name:       "tool.input-examples",
 			InnerField: "input_examples",
 		},
-		&requestflag.InnerFlag[any]{
+		&requestflag.InnerFlag[map[string]any]{
 			Name:       "tool.input-schema",
+			Usage:      "[JSON schema](https://json-schema.org/draft/2020-12) for this tool's input.\n\nThis defines the shape of the `input` that your tool accepts and that the model will produce.",
 			InnerField: "input_schema",
 		},
 		&requestflag.InnerFlag[*int64]{
@@ -848,6 +852,7 @@ var betaMessagesCountTokens = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.InnerFlag[any]{
 			Name:       "tool.tools",
+			Usage:      "The server's tool listing, pinned: when present, the server is not asked for its tools before sampling and exactly these entries, with `default_config` and `configs` applied, are the toolset's tools. Copy it from the `mcp_tool_listing` block of an earlier response.",
 			InnerField: "tools",
 		},
 		&requestflag.InnerFlag[*string]{

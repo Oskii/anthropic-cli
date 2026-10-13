@@ -147,11 +147,12 @@ var betaSessionsEventsSend = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.InnerFlag[string]{
 			Name:       "event.result",
-			Usage:      "UserToolConfirmationResult enum",
+			Usage:      "The confirmation result: 'allow' or 'deny'.",
 			InnerField: "result",
 		},
-		&requestflag.InnerFlag[any]{
+		&requestflag.InnerFlag[map[string]any]{
 			Name:       "event.rubric",
+			Usage:      "How to grade the outcome. Text or file reference.",
 			InnerField: "rubric",
 		},
 		&requestflag.InnerFlag[*string]{

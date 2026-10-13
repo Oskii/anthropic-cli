@@ -207,7 +207,7 @@ func TestOutcomeAndErrors(t *testing.T) {
 	require.Equal(t, []string{"error"}, blockKinds(f.Nodes()[1]))
 	out := f.Nodes()[2]
 	require.Equal(t, "e300", out.Event.ID)
-	require.Equal(t, "satisfied", out.OutcomeEnd.Result)
+	require.Equal(t, "satisfied", out.OutcomeEnd.AsSpanOutcomeEvaluationEnd().Result)
 	require.Equal(t, "all good", EventText(*out.OutcomeEnd))
 }
 

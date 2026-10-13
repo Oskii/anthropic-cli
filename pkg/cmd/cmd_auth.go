@@ -3,6 +3,7 @@ package cmd
 import (
 	"bufio"
 	"bytes"
+	"cmp"
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
@@ -19,6 +20,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"slices"
 	"strings"
 	"time"
 
@@ -31,6 +33,9 @@ const (
 	defaultConsoleURL = "https://platform.claude.com"
 	defaultBaseURL    = "https://api.anthropic.com"
 	oauthScope        = "user:profile user:inference user:developer"
+	// scopeOrgAdmin is what the /v1/organizations routes require of a
+	// user_oauth token.
+	scopeOrgAdmin = "org:admin"
 
 	// betaUserOAuth is the anthropic-beta header value for user_oauth
 	// credentials (interactive PKCE login). Required on the
@@ -125,6 +130,10 @@ func init() {
 						Name:  "scope",
 						Usage: "OAuth scope to request (space-separated; overrides the profile's stored scope or the default)",
 					},
+					&cli.BoolFlag{
+						Name:  "admin",
+						Usage: "Also request the org:admin scope, which the organization commands require of a login. Adds to --scope, the profile's stored scope or the default, so other commands keep working.",
+					},
 					&cli.StringFlag{
 						Name:  "workspace-id",
 						Usage: "Workspace to bind the access token to (optional). If omitted, Console may show a workspace picker after org selection; login also succeeds with no workspace bound. Find IDs under Settings → Workspaces in the Console (resolved from --console-url / profile / default).",
@@ -206,9 +215,20 @@ func authLogin(ctx context.Context, c *cli.Command) error {
 		fmt.Fprintf(os.Stderr, "warning: ignoring unreadable profile config: %v\n", prevErr)
 	}
 	requestedScope := resolveRequestedScope(c.String("scope"), prev)
+	if c.Bool("admin") {
+		requestedScope = addScope(requestedScope, scopeOrgAdmin)
+	}
 	clientID := resolveClientID(c.String("client-id"), prev)
 	consoleURL := resolveConsoleURL(c.String("console-url"), prev)
+	// Same rule as the token endpoint: over cleartext the authorize request's
+	// code_challenge can be swapped in flight, which defeats PKCE.
+	if config.RequireSecureTokenEndpoint(consoleURL) != nil {
+		return fmt.Errorf("refusing to sign in through non-https console URL %q", consoleURL)
+	}
 	baseURL := resolveBaseURL(c.String("base-url"), prev)
+	if err := config.RequireSecureTokenEndpoint(baseURL); err != nil {
+		return err
+	}
 	workspaceID := resolveWorkspaceID(c.String("workspace-id"), prev)
 	// workspaceID may be empty here — Console may show a workspace picker
 	// after the org selection step, in which case the resolved workspace
@@ -427,7 +447,7 @@ func authLogin(ctx context.Context, c *cli.Command) error {
 		}
 		// scope/base_url/console_url are only-if-explicitly-set: those are
 		// runtime defaults that the CLI/SDK fills in.
-		if c.IsSet("scope") {
+		if c.IsSet("scope") || c.Bool("admin") {
 			scope := tok.Scope
 			if scope == "" {
 				scope = requestedScope
@@ -465,6 +485,19 @@ func authLogin(ctx context.Context, c *cli.Command) error {
 				tok.Workspace.Name, effectiveWorkspaceID, profile, prev.WorkspaceID,
 				effectiveWorkspaceID, profile, effectiveWorkspaceID)
 		}
+		if c.Bool("admin") && !hasScope(resolveRequestedScope("", prev), scopeOrgAdmin) {
+			fmt.Fprintf(os.Stderr,
+				"→ This login requested %s, but profile %q does not: a later `ant auth login` without --admin drops it.\n"+
+					"  To request it on every login: ant profile set scope %q --profile %s\n",
+				scopeOrgAdmin, profile, requestedScope, profile)
+		}
+	}
+
+	if c.Bool("admin") && tok.Scope != "" && !hasScope(tok.Scope, scopeOrgAdmin) {
+		fmt.Fprintf(os.Stderr,
+			"⚠  %s was requested but not granted (granted: %s). Only an organization admin can be granted it;\n"+
+				"   the organization commands will be refused with this login.\n",
+			scopeOrgAdmin, tok.Scope)
 	}
 
 	expiresAt := time.Now().Add(time.Duration(tok.ExpiresIn) * time.Second)
@@ -649,11 +682,13 @@ func authStatus(ctx context.Context, c *cli.Command) error {
 	if err := applyStdinCredential(root); err != nil {
 		return err
 	}
-	apiKeySet := root.IsSet("api-key")
-	authTokenSet := root.IsSet("auth-token")
+	apiKey, apiKeySet := directCredential(root, "api-key")
+	authToken, authTokenSet := directCredential(root, "auth-token")
 	fed := federationFromRoot(root)
 	fedReady := fed.AnySet() && len(fed.Missing()) == 0
 	fedMissing := fed.Missing()
+	gc := googleCloudFromRoot(root)
+	gcSet := gc.AnySet()
 
 	// Credential tier mirrors getDefaultRequestOptions exactly. Note that
 	// partial federation config (fed.AnySet() but not fedReady) does NOT
@@ -670,13 +705,15 @@ func authStatus(ctx context.Context, c *cli.Command) error {
 		credWinner = 3
 	case fedReady:
 		credWinner = 4
-	case profileTokenPresent:
+	case gcSet:
 		credWinner = 5
+	case profileTokenPresent:
+		credWinner = 6
 	}
 
 	fmt.Fprintln(out)
 	fmt.Fprintln(out, "Credentials")
-	if credWinner == 3 || credWinner == 5 {
+	if credWinner == 3 || credWinner == 6 {
 		if who := loggedInSummary(creds.OrganizationName, creds.AccountEmail); who != "" {
 			fmt.Fprintf(out, "  Logged in %s\n", who)
 		}
@@ -694,10 +731,10 @@ func authStatus(ctx context.Context, c *cli.Command) error {
 		fmt.Fprintln(out, "  (no credential configured — set ANTHROPIC_API_KEY or run `ant auth login`)")
 	}
 	if apiKeySet {
-		writeRow(out, credWinner == 1, credentialSourceLabel(root, "api-key"), formatSecret(root.String("api-key"), true))
+		writeRow(out, credWinner == 1, credentialSourceLabel(root, "api-key"), formatSecret(apiKey, true))
 	}
 	if authTokenSet {
-		writeRow(out, credWinner == 2, credentialSourceLabel(root, "auth-token"), formatSecret(root.String("auth-token"), true))
+		writeRow(out, credWinner == 2, credentialSourceLabel(root, "auth-token"), formatSecret(authToken, true))
 	}
 	if profileTokenPresent {
 		authType := "unknown"
@@ -710,7 +747,7 @@ func authStatus(ctx context.Context, c *cli.Command) error {
 		} else {
 			profileLabel += " [via active_config]"
 		}
-		writeRow(out, credWinner == 3 || credWinner == 5, profileLabel, formatSecret(creds.AccessToken, true))
+		writeRow(out, credWinner == 3 || credWinner == 6, profileLabel, formatSecret(creds.AccessToken, true))
 		exp := time.Unix(creds.ExpiresAt, 0)
 		writeDetail(out, "expires", fmt.Sprintf("%s (%s)", exp.Format(time.RFC3339), formatRemaining(time.Until(exp))))
 		// Prefer the credentials file's scope (what the live token was granted)
@@ -747,6 +784,12 @@ func authStatus(ctx context.Context, c *cli.Command) error {
 		writeRow(out, credWinner == 4, "Federation (jwt-bearer)", "see 'Federation inputs' below")
 	} else if fed.AnySet() {
 		writeRow(out, false, "Federation (jwt-bearer)", "partial — missing required inputs")
+	}
+	if gcSet {
+		writeRow(out, credWinner == 5, "Google Cloud", "Application Default Credentials")
+		writeDetail(out, "project", cmp.Or(gc.Project, "(from GOOGLE_CLOUD_PROJECT or the credentials)"))
+		writeDetail(out, "location", cmp.Or(gc.Location, "global"))
+		writeDetail(out, "workspace_id", cmp.Or(gc.WorkspaceID, "(not set)"))
 	}
 
 	// Surface the surprising-override case: the user ran `ant auth login` but
@@ -789,6 +832,10 @@ func authStatus(ctx context.Context, c *cli.Command) error {
 	}
 	baseWinner := 4 // SDK default when nothing else is set
 	switch {
+	case credWinner == 5:
+		// The Google Cloud tier takes only its own base URL: the rows below
+		// name hosts for Anthropic credentials and are not in play.
+		baseWinner = 5
 	case flagBaseURL != "":
 		baseWinner = 1
 	case envBaseURL != "":
@@ -807,6 +854,13 @@ func authStatus(ctx context.Context, c *cli.Command) error {
 	}
 	if baseWinner == 4 {
 		writeRow(out, true, "SDK default", defaultBaseURL)
+	}
+	if baseWinner == 5 {
+		label := "Google Cloud gateway"
+		if gc.BaseURL != "" {
+			label = "--google-cloud-base-url / ANTHROPIC_GOOGLE_CLOUD_BASE_URL"
+		}
+		writeRow(out, true, label, gc.host())
 	}
 
 	fmt.Fprintln(out)
@@ -1112,6 +1166,9 @@ func readFullCredentials(cfg *config.Config, dir, profile string) (config.Creden
 // user_oauth credentials. The federation beta is intentionally absent so the
 // request is not gateway-routed to api-go's jwt-bearer-only handler.
 func refreshAccessToken(ctx context.Context, baseURL, clientID, refreshToken string) (*tokenResponse, error) {
+	if err := config.RequireSecureTokenEndpoint(baseURL); err != nil {
+		return nil, err
+	}
 	body, err := json.Marshal(map[string]string{
 		"grant_type":    "refresh_token",
 		"refresh_token": refreshToken,
@@ -1120,14 +1177,14 @@ func refreshAccessToken(ctx context.Context, baseURL, clientID, refreshToken str
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequestWithContext(ctx, "POST", baseURL+"/v1/oauth/token", bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, "POST", baseURL+config.TokenEndpoint, bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("anthropic-beta", betaUserOAuth)
 
-	client := &http.Client{Timeout: 30 * time.Second}
+	client := config.NewTokenHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -1228,6 +1285,9 @@ func waitForCallback(ctx context.Context, listener net.Listener, wantState strin
 // check across both legs — omitting it returns a 400 with
 // `oauth_request_parse_error`.
 func exchangeCode(ctx context.Context, baseURL, clientID, code, verifier, redirectURI, state string, debug bool) (*tokenResponse, error) {
+	if err := config.RequireSecureTokenEndpoint(baseURL); err != nil {
+		return nil, err
+	}
 	form := url.Values{
 		"grant_type":    {"authorization_code"},
 		"code":          {code},
@@ -1236,14 +1296,14 @@ func exchangeCode(ctx context.Context, baseURL, clientID, code, verifier, redire
 		"redirect_uri":  {redirectURI},
 		"state":         {state},
 	}
-	req, err := http.NewRequestWithContext(ctx, "POST", baseURL+"/v1/oauth/token",
+	req, err := http.NewRequestWithContext(ctx, "POST", baseURL+config.TokenEndpoint,
 		strings.NewReader(form.Encode()))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	client := &http.Client{Timeout: 30 * time.Second}
+	client := config.NewTokenHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -1298,6 +1358,18 @@ func resolveRequestedScope(flag string, prev *config.Config) string {
 		return prev.AuthenticationInfo.UserOAuth.Scope
 	}
 	return oauthScope
+}
+
+func hasScope(scopes, want string) bool {
+	return slices.Contains(strings.Fields(scopes), want)
+}
+
+// addScope appends a scope to a space-separated set unless it is already there.
+func addScope(scopes, add string) string {
+	if hasScope(scopes, add) {
+		return scopes
+	}
+	return strings.Join(append(strings.Fields(scopes), add), " ")
 }
 
 // resolveWorkspaceID picks the workspace_id sent on /oauth/authorize:

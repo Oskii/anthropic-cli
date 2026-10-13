@@ -64,8 +64,9 @@ var betaDreamsCreate = requestflag.WithInnerFlags(cli.Command{
 			Usage:      "The ID of the memory store for the dream to read (`memstore_...`).\n\nThe memory store must be in the same workspace as the dream and must not be archived.",
 			InnerField: "memory_store_id",
 		},
-		&requestflag.InnerFlag[any]{
+		&requestflag.InnerFlag[[]string]{
 			Name:       "input.session-ids",
+			Usage:      "The IDs of the sessions whose transcripts the dream reads (`sesn_...`).\n\nGive 1 to 100 IDs, with no duplicates. Each session must be in the same workspace as the dream. Responses list the IDs in sorted order.\n\nThe [limits table in the Dreams guide](https://platform.claude.com/docs/en/managed-agents/dreams#limits) lists all the limits on a dream.",
 			InnerField: "session_ids",
 		},
 	},
@@ -77,7 +78,7 @@ var betaDreamsCreate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.InnerFlag[*string]{
 			Name:       "model.speed",
-			Usage:      "Inference speed mode. `fast` provides significantly faster output token generation at premium pricing. Not all models support `fast`; invalid combinations are rejected at create time.",
+			Usage:      "How fast the model generates output for the dream. Defaults to `standard`.\n\nDreams accept only `standard`.",
 			InnerField: "speed",
 		},
 	},

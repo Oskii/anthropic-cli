@@ -17,7 +17,7 @@ var betaAgentsCreate = requestflag.WithInnerFlags(cli.Command{
 	Usage:   "Create Agent",
 	Suggest: true,
 	Flags: []cli.Flag{
-		&requestflag.Flag[map[string]any]{
+		&requestflag.Flag[any]{
 			Name:     "model",
 			Usage:    "Model identifier. Accepts the [model string](https://platform.claude.com/docs/en/about-claude/models/overview#latest-models-comparison), e.g. `claude-opus-5`, or a `model_config` object for additional configuration control",
 			Required: true,
@@ -46,7 +46,7 @@ var betaAgentsCreate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.Flag[map[string]any]{
 			Name:     "multiagent",
-			Usage:    "A coordinator topology: the session's primary thread orchestrates work by spawning session threads, each running an agent drawn from the `agents` roster.",
+			Usage:    "Multiagent orchestration configuration.",
 			BodyPath: "multiagent",
 		},
 		&requestflag.Flag[[]map[string]any]{
@@ -61,7 +61,7 @@ var betaAgentsCreate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.Flag[[]map[string]any]{
 			Name:     "tool",
-			Usage:    "Tool configurations available to the agent. Maximum of 128 tools across all toolsets allowed.",
+			Usage:    "Tool configurations available to the agent. Maximum of 256 tools across all toolsets allowed.",
 			BodyPath: "tools",
 		},
 		&requestflag.Flag[[]string]{
@@ -86,6 +86,7 @@ var betaAgentsCreate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.InnerFlag[any]{
 			Name:       "model.effort",
+			Usage:      "How hard Claude works on each inference call. Accepts a bare level string (`\"high\"`) or `{\"type\": \"high\"}`. On create, omitting it resolves the per-model default; on update, omitting it leaves the stored value unchanged.",
 			InnerField: "effort",
 		},
 		&requestflag.InnerFlag[*string]{
@@ -95,7 +96,7 @@ var betaAgentsCreate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.InnerFlag[*string]{
 			Name:       "model.speed",
-			Usage:      "Inference speed mode. `fast` provides significantly faster output token generation at premium pricing. Not all models support `fast`; invalid combinations are rejected at create time.",
+			Usage:      "Inference speed mode. Defaults to `standard`.",
 			InnerField: "speed",
 		},
 	},
@@ -117,15 +118,30 @@ var betaAgentsCreate = requestflag.WithInnerFlags(cli.Command{
 		},
 	},
 	"multiagent": {
+		&requestflag.InnerFlag[string]{
+			Name:       "multiagent.type",
+			Usage:      `Allowed values: "coordinator", "multiagent_20261001".`,
+			InnerField: "type",
+		},
+		&requestflag.InnerFlag[map[string]any]{
+			Name:       "multiagent.advisor",
+			Usage:      "Whether the session's primary thread can consult an advisor model.",
+			InnerField: "advisor",
+		},
 		&requestflag.InnerFlag[[]any]{
 			Name:       "multiagent.agents",
 			Usage:      "Agents the coordinator may spawn as session threads. 1–20 entries. Each entry is an agent ID string, a versioned `{\"type\":\"agent\",\"id\",\"version\"}` reference, or `{\"type\":\"self\"}` to allow recursive self-invocation. Entries must reference distinct agents (after resolving `self` and string forms); at most one `self`. Referenced agents must exist, must not be archived, and must not themselves have `multiagent` set (depth limit 1).",
 			InnerField: "agents",
 		},
-		&requestflag.InnerFlag[string]{
-			Name:       "multiagent.type",
-			Usage:      `Allowed values: "coordinator".`,
-			InnerField: "type",
+		&requestflag.InnerFlag[map[string]any]{
+			Name:       "multiagent.subagents",
+			Usage:      "Whether the agent can spawn session threads.",
+			InnerField: "subagents",
+		},
+		&requestflag.InnerFlag[map[string]any]{
+			Name:       "multiagent.workflows",
+			Usage:      "Whether the agent can start workflow runs.",
+			InnerField: "workflows",
 		},
 	},
 	"skill": {
@@ -240,14 +256,14 @@ var betaAgentsUpdate = requestflag.WithInnerFlags(cli.Command{
 			Usage:    "Metadata patch. Set a key to a string to upsert it, or to null to delete it. Omit the field to preserve. The stored bag is limited to 16 keys (up to 64 chars each) with values up to 512 chars.",
 			BodyPath: "metadata",
 		},
-		&requestflag.Flag[map[string]any]{
+		&requestflag.Flag[any]{
 			Name:     "model",
 			Usage:    "Model identifier. Accepts the [model string](https://platform.claude.com/docs/en/about-claude/models/overview#latest-models-comparison), e.g. `claude-opus-5`, or a `model_config` object for additional configuration control. Omit to preserve. Cannot be cleared.",
 			BodyPath: "model",
 		},
 		&requestflag.Flag[map[string]any]{
 			Name:     "multiagent",
-			Usage:    "A coordinator topology: the session's primary thread orchestrates work by spawning session threads, each running an agent drawn from the `agents` roster.",
+			Usage:    "Multiagent orchestration configuration.",
 			BodyPath: "multiagent",
 		},
 		&requestflag.Flag[string]{
@@ -267,7 +283,7 @@ var betaAgentsUpdate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.Flag[any]{
 			Name:     "tool",
-			Usage:    "Tool configurations available to the agent. Full replacement. Omit to preserve; send empty array or null to clear. Maximum of 128 tools across all toolsets allowed.",
+			Usage:    "Tool configurations available to the agent. Full replacement. Omit to preserve; send empty array or null to clear. Maximum of 256 tools across all toolsets allowed.",
 			BodyPath: "tools",
 		},
 		&requestflag.Flag[int64]{
@@ -317,6 +333,7 @@ var betaAgentsUpdate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.InnerFlag[any]{
 			Name:       "model.effort",
+			Usage:      "How hard Claude works on each inference call. Accepts a bare level string (`\"high\"`) or `{\"type\": \"high\"}`. On create, omitting it resolves the per-model default; on update, omitting it leaves the stored value unchanged.",
 			InnerField: "effort",
 		},
 		&requestflag.InnerFlag[*string]{
@@ -326,20 +343,35 @@ var betaAgentsUpdate = requestflag.WithInnerFlags(cli.Command{
 		},
 		&requestflag.InnerFlag[*string]{
 			Name:       "model.speed",
-			Usage:      "Inference speed mode. `fast` provides significantly faster output token generation at premium pricing. Not all models support `fast`; invalid combinations are rejected at create time.",
+			Usage:      "Inference speed mode. Defaults to `standard`.",
 			InnerField: "speed",
 		},
 	},
 	"multiagent": {
+		&requestflag.InnerFlag[string]{
+			Name:       "multiagent.type",
+			Usage:      `Allowed values: "coordinator", "multiagent_20261001".`,
+			InnerField: "type",
+		},
+		&requestflag.InnerFlag[map[string]any]{
+			Name:       "multiagent.advisor",
+			Usage:      "Whether the session's primary thread can consult an advisor model.",
+			InnerField: "advisor",
+		},
 		&requestflag.InnerFlag[[]any]{
 			Name:       "multiagent.agents",
 			Usage:      "Agents the coordinator may spawn as session threads. 1–20 entries. Each entry is an agent ID string, a versioned `{\"type\":\"agent\",\"id\",\"version\"}` reference, or `{\"type\":\"self\"}` to allow recursive self-invocation. Entries must reference distinct agents (after resolving `self` and string forms); at most one `self`. Referenced agents must exist, must not be archived, and must not themselves have `multiagent` set (depth limit 1).",
 			InnerField: "agents",
 		},
-		&requestflag.InnerFlag[string]{
-			Name:       "multiagent.type",
-			Usage:      `Allowed values: "coordinator".`,
-			InnerField: "type",
+		&requestflag.InnerFlag[map[string]any]{
+			Name:       "multiagent.subagents",
+			Usage:      "Whether the agent can spawn session threads.",
+			InnerField: "subagents",
+		},
+		&requestflag.InnerFlag[map[string]any]{
+			Name:       "multiagent.workflows",
+			Usage:      "Whether the agent can start workflow runs.",
+			InnerField: "workflows",
 		},
 	},
 	"skill": {

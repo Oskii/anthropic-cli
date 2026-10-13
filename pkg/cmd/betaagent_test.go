@@ -13,7 +13,7 @@ func TestBetaAgentsCreate(t *testing.T) {
 			t,
 			"--api-key", "string",
 			"beta:agents", "create",
-			"--model", "{id: claude-opus-5, effort: low, inference_geo: inference_geo, speed: standard}",
+			"--model", "claude-opus-5",
 			"--name", "My First Agent",
 			"--description", "A general-purpose starter agent.",
 			"--mcp-server", "{name: example-mcp, type: url, url: https://example-server.modelcontextprotocol.io/sse}",
@@ -36,15 +36,14 @@ func TestBetaAgentsCreate(t *testing.T) {
 			t,
 			"--api-key", "string",
 			"beta:agents", "create",
-			"--model", "{id: claude-opus-5, effort: low, inference_geo: inference_geo, speed: standard}",
+			"--model", "claude-opus-5",
 			"--name", "My First Agent",
 			"--description", "A general-purpose starter agent.",
 			"--mcp-server.name", "example-mcp",
 			"--mcp-server.type", "url",
 			"--mcp-server.url", "https://example-server.modelcontextprotocol.io/sse",
 			"--metadata", "{foo: bar}",
-			"--multiagent.agents", "[agent_011CZkYqphY8vELVzwCUpqiQ, {type: self}]",
-			"--multiagent.type", "coordinator",
+			"--multiagent", "{agents: [agent_011CZkYqphY8vELVzwCUpqiQ, {type: self}], type: coordinator}",
 			"--skill", "{skill_id: xlsx, type: anthropic, version: '1'}",
 			"--system", "You are a general-purpose agent that can research, write code, run commands, and use connected tools to complete the user's task end to end.",
 			"--tool", "{type: agent_toolset_20260401, configs: [{name: bash, enabled: true, permission_policy: {type: always_allow}, type: bash}], default_config: {enabled: true, permission_policy: {type: always_allow}}}",
@@ -56,11 +55,7 @@ func TestBetaAgentsCreate(t *testing.T) {
 	t.Run("piping data", func(t *testing.T) {
 		// Test piping YAML data over stdin
 		pipeData := []byte("" +
-			"model:\n" +
-			"  id: claude-opus-5\n" +
-			"  effort: low\n" +
-			"  inference_geo: inference_geo\n" +
-			"  speed: standard\n" +
+			"model: claude-opus-5\n" +
 			"name: My First Agent\n" +
 			"description: A general-purpose starter agent.\n" +
 			"mcp_servers:\n" +
@@ -104,7 +99,6 @@ func TestBetaAgentsCreate(t *testing.T) {
 }
 
 func TestBetaAgentsRetrieve(t *testing.T) {
-	t.Skip("buildURL drops path-level query params")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
@@ -156,8 +150,7 @@ func TestBetaAgentsUpdate(t *testing.T) {
 			"--mcp-server.url", "https://example-server.modelcontextprotocol.io/sse",
 			"--metadata", "{foo: string}",
 			"--model", "{id: claude-opus-5, effort: low, inference_geo: inference_geo, speed: standard}",
-			"--multiagent.agents", "[agent_011CZkYqphY8vELVzwCUpqiQ, {type: self}]",
-			"--multiagent.type", "coordinator",
+			"--multiagent", "{agents: [agent_011CZkYqphY8vELVzwCUpqiQ, {type: self}], type: coordinator}",
 			"--name", "name",
 			"--skill", "[{skill_id: xlsx, type: anthropic, version: '1'}]",
 			"--system", "You are a general-purpose agent that can research, write code, run commands, and use connected tools to complete the user's task end to end.",
@@ -221,7 +214,6 @@ func TestBetaAgentsUpdate(t *testing.T) {
 }
 
 func TestBetaAgentsList(t *testing.T) {
-	t.Skip("buildURL drops path-level query params")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,

@@ -15,6 +15,7 @@ func TestBetaOrganizationWorkspacesRateLimitsList(t *testing.T) {
 			"--max-items", "10",
 			"--workspace-id", "workspace_id",
 			"--group-type", "batch",
+			"--include-inherited=true",
 			"--limit", "1",
 			"--page", "page",
 		)
