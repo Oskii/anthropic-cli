@@ -3,15 +3,16 @@ package cmd
 import (
 	"testing"
 
-	"github.com/anthropics/anthropic-cli/internal/mocktest"
-	"github.com/anthropics/anthropic-cli/internal/requestflag"
+	"github.com/anthropics/anthropic-cli/v2/internal/mocktest"
+	"github.com/anthropics/anthropic-cli/v2/internal/requestflag"
 )
 
 func TestBetaOrganizationFederationRulesCreate(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:organization:federation:rules", "create",
 			"--issuer-id", "issuer_id",
 			"--match", "{audience: audience, claims: {foo: string}, condition: condition, subject_prefix: subject_prefix}",
@@ -34,7 +35,7 @@ func TestBetaOrganizationFederationRulesCreate(t *testing.T) {
 		// Alternative argument passing style using inner flags
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:organization:federation:rules", "create",
 			"--issuer-id", "issuer_id",
 			"--match.audience", "audience",
@@ -79,7 +80,7 @@ func TestBetaOrganizationFederationRulesCreate(t *testing.T) {
 			"workspace_id: workspace_id\n")
 		mocktest.TestRunMockTestWithPipeAndFlags(
 			t, pipeData,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:organization:federation:rules", "create",
 			"--beta", "message-batches-2024-09-24",
 		)
@@ -87,10 +88,11 @@ func TestBetaOrganizationFederationRulesCreate(t *testing.T) {
 }
 
 func TestBetaOrganizationFederationRulesRetrieve(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:organization:federation:rules", "retrieve",
 			"--federation-rule-id", "federation_rule_id",
 			"--beta", "message-batches-2024-09-24",
@@ -99,10 +101,11 @@ func TestBetaOrganizationFederationRulesRetrieve(t *testing.T) {
 }
 
 func TestBetaOrganizationFederationRulesUpdate(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:organization:federation:rules", "update",
 			"--federation-rule-id", "federation_rule_id",
 			"--applies-to-all-workspaces=true",
@@ -125,7 +128,7 @@ func TestBetaOrganizationFederationRulesUpdate(t *testing.T) {
 		// Alternative argument passing style using inner flags
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:organization:federation:rules", "update",
 			"--federation-rule-id", "federation_rule_id",
 			"--applies-to-all-workspaces=true",
@@ -169,7 +172,7 @@ func TestBetaOrganizationFederationRulesUpdate(t *testing.T) {
 			"workspace_id: workspace_id\n")
 		mocktest.TestRunMockTestWithPipeAndFlags(
 			t, pipeData,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:organization:federation:rules", "update",
 			"--federation-rule-id", "federation_rule_id",
 			"--beta", "message-batches-2024-09-24",
@@ -178,10 +181,11 @@ func TestBetaOrganizationFederationRulesUpdate(t *testing.T) {
 }
 
 func TestBetaOrganizationFederationRulesList(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:organization:federation:rules", "list",
 			"--max-items", "10",
 			"--include-archived=true",
@@ -194,10 +198,11 @@ func TestBetaOrganizationFederationRulesList(t *testing.T) {
 }
 
 func TestBetaOrganizationFederationRulesArchive(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:organization:federation:rules", "archive",
 			"--federation-rule-id", "federation_rule_id",
 			"--beta", "message-batches-2024-09-24",

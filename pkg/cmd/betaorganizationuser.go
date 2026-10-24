@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/anthropics/anthropic-cli/internal/apiquery"
-	"github.com/anthropics/anthropic-cli/internal/requestflag"
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-cli/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-cli/v2/internal/requestflag"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 	"github.com/tidwall/gjson"
 	"github.com/urfave/cli/v3"
 )
@@ -41,7 +41,7 @@ var betaOrganizationUsersUpdate = cli.Command{
 		},
 		&requestflag.Flag[string]{
 			Name:     "role",
-			Usage:    "New role for the User.\n\nThe accepted values depend on the organization type. Console and API organizations accept `user`, `developer`, `billing`, and `claude_code_user`; `admin` cannot be assigned through the API. Claude Enterprise organizations accept `user` and `managed`.",
+			Usage:    "New role for the User.\n\nThe accepted values depend on the organization type. Console and API organizations accept `user`, `developer`, `billing`, and `claude_code_user`; `admin` cannot be assigned through the API. Claude Enterprise organizations accept `user` and `managed`; changing a User's role to `managed` requires the `write:rbac_groups` scope in addition to `write:members`.",
 			Required: true,
 			BodyPath: "role",
 		},

@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/anthropics/anthropic-cli/internal/declarative/core"
+	"github.com/anthropics/anthropic-cli/v2/internal/declarative/core"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -389,6 +389,23 @@ func TestClearedFieldIsExplicitlyNulled(t *testing.T) {
 	h.apply()
 	id := h.lock.Resources["./environments/cloud.yml"].ID
 	assert.NotContains(t, h.client.objects[id], "description")
+}
+
+func TestClearedFieldThatCanHoldASecretIsExplicitlyNulled(t *testing.T) {
+	const required = "agent: ../agents/a.md\nenvironment_id: ../environments/e.yml\n"
+	h := newHarness(t, map[string]string{
+		"agents/a.md":         "---\nmodel: m\n---\na\n",
+		"environments/e.yml":  "name: e\n",
+		"memory_stores/m.yml": "name: m\n",
+		"deployments/d.yml":   required + "resources: [../memory_stores/m.yml]\n",
+	})
+	h.apply()
+	require.NoError(t, os.WriteFile(filepath.Join(h.root, "deployments/d.yml"), []byte(required), 0o644))
+
+	h.apply()
+
+	deployment := h.client.objects[h.lock.Resources["./deployments/d.yml"].ID]
+	assert.NotContains(t, deployment, "resources")
 }
 
 // Every tracked resource missing at once is not deletion; it is credentials

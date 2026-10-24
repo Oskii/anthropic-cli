@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/anthropics/anthropic-cli/internal/apiquery"
-	"github.com/anthropics/anthropic-cli/internal/requestflag"
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-cli/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-cli/v2/internal/requestflag"
+	"github.com/anthropics/anthropic-cli/v2/internal/termsafe"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 	"github.com/tidwall/gjson"
 	"github.com/urfave/cli/v3"
 )
@@ -367,7 +368,7 @@ func handleBetaOrganizationPluginsVersionsDownload(ctx context.Context, cmd *cli
 	}
 	message, err := writeBinaryResponse(response, os.Stdout, cmd.String("output"))
 	if message != "" {
-		fmt.Println(message)
+		fmt.Fprintln(termsafe.Stdout, message)
 	}
 	return err
 }

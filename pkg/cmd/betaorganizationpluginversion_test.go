@@ -4,14 +4,15 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/anthropics/anthropic-cli/internal/mocktest"
+	"github.com/anthropics/anthropic-cli/v2/internal/mocktest"
 )
 
 func TestBetaOrganizationPluginsVersionsCreate(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:organization:plugins:versions", "create",
 			"--plugin-id", "plugin_id",
 			"--file", mocktest.TestFile(t, "Example data"),
@@ -31,7 +32,7 @@ func TestBetaOrganizationPluginsVersionsCreate(t *testing.T) {
 		pipeData := []byte(pipeDataStr)
 		mocktest.TestRunMockTestWithPipeAndFlags(
 			t, pipeData,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:organization:plugins:versions", "create",
 			"--plugin-id", "plugin_id",
 			"--beta", "message-batches-2024-09-24",
@@ -40,10 +41,11 @@ func TestBetaOrganizationPluginsVersionsCreate(t *testing.T) {
 }
 
 func TestBetaOrganizationPluginsVersionsRetrieve(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:organization:plugins:versions", "retrieve",
 			"--plugin-id", "plugin_id",
 			"--version", "version",
@@ -54,10 +56,11 @@ func TestBetaOrganizationPluginsVersionsRetrieve(t *testing.T) {
 }
 
 func TestBetaOrganizationPluginsVersionsList(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:organization:plugins:versions", "list",
 			"--max-items", "10",
 			"--plugin-id", "plugin_id",
@@ -70,10 +73,11 @@ func TestBetaOrganizationPluginsVersionsList(t *testing.T) {
 }
 
 func TestBetaOrganizationPluginsVersionsDownload(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:organization:plugins:versions", "download",
 			"--plugin-id", "plugin_id",
 			"--version", "version",

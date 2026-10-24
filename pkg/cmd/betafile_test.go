@@ -4,14 +4,15 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/anthropics/anthropic-cli/internal/mocktest"
+	"github.com/anthropics/anthropic-cli/v2/internal/mocktest"
 )
 
 func TestBetaFilesList(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:files", "list",
 			"--max-items", "10",
 			"--id", "string",
@@ -25,10 +26,11 @@ func TestBetaFilesList(t *testing.T) {
 }
 
 func TestBetaFilesDelete(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:files", "delete",
 			"--file-id", "file_id",
 			"--beta", "message-batches-2024-09-24",
@@ -38,10 +40,11 @@ func TestBetaFilesDelete(t *testing.T) {
 }
 
 func TestBetaFilesDownload(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:files", "download",
 			"--file-id", "file_id",
 			"--beta", "message-batches-2024-09-24",
@@ -52,10 +55,11 @@ func TestBetaFilesDownload(t *testing.T) {
 }
 
 func TestBetaFilesRetrieveMetadata(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:files", "retrieve-metadata",
 			"--file-id", "file_id",
 			"--beta", "message-batches-2024-09-24",
@@ -65,10 +69,11 @@ func TestBetaFilesRetrieveMetadata(t *testing.T) {
 }
 
 func TestBetaFilesUpload(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:files", "upload",
 			"--file", mocktest.TestFile(t, "Example data"),
 			"--expires-in-seconds", "3600",
@@ -87,7 +92,7 @@ func TestBetaFilesUpload(t *testing.T) {
 		pipeData := []byte(pipeDataStr)
 		mocktest.TestRunMockTestWithPipeAndFlags(
 			t, pipeData,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:files", "upload",
 			"--beta", "message-batches-2024-09-24",
 			"--workspace-id", "wrkspc_011CZkZaBF1tNoB5wlCeusgy",

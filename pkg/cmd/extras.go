@@ -4,10 +4,7 @@ package cmd
 // must survive a regen lives here rather than in the generated files.
 
 import (
-	"fmt"
-
-	"github.com/anthropics/anthropic-cli/internal/requestflag"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 	"github.com/urfave/cli/v3"
 )
 
@@ -17,7 +14,7 @@ import (
 type extraClientFlags struct {
 	BaseURL string
 	// Sent as the anthropic-workspace-id header. Picks the workspace for API keys
-	// that have access to multiple workspaces; required on Claude Platform on AWS.
+	// that have access to multiple workspaces.
 	WorkspaceID string
 }
 
@@ -54,6 +51,10 @@ func (o extraClientFlags) requestOptions() []option.RequestOption {
 func init() {
 	Command.Commands = append(Command.Commands, &applyCommand)
 
+	// cmd.go leaves both hooks unset, so nothing generated is replaced here.
+	Command.Before = otelBefore
+	Command.After = otelAfter
+
 	// cmd.go declares --base-url without an env source and the SDK's own
 	// env handling is disabled (WithoutEnvironmentDefaults), so attach
 	// ANTHROPIC_BASE_URL here. TestBaseURLEnvRealTree fails if a regen
@@ -61,11 +62,6 @@ func init() {
 	for _, f := range Command.Flags {
 		if sf, ok := f.(*cli.StringFlag); ok && sf.Name == "base-url" {
 			sf.Sources = cli.EnvVars("ANTHROPIC_BASE_URL")
-		}
-		if rf, ok := f.(*requestflag.Flag[string]); ok {
-			if alt, deprecated := argvCredentialFlags[rf.Name]; deprecated {
-				rf.Usage = fmt.Sprintf(argvCredentialDeprecation, alt)
-			}
 		}
 	}
 	Command.Flags = append(Command.Flags,
@@ -109,28 +105,46 @@ func init() {
 		},
 		&cli.StringFlag{
 			Name:    "workspace-id",
-			Usage:   "Workspace ID (wrkspc_...) to send as the anthropic-workspace-id header. Only needed for API keys that aren't scoped to a single workspace or on Claude Platform on AWS.",
+			Usage:   "Workspace ID (wrkspc_...) to send as the anthropic-workspace-id header. Only needed for API keys that aren't scoped to a single workspace. On Claude Platform on AWS, use --aws-workspace-id.",
 			Sources: cli.EnvVars("ANTHROPIC_WORKSPACE_ID"),
 		},
 		&cli.StringFlag{
 			Name:    "google-cloud-project",
-			Usage:   "Google Cloud project ID. Setting this, --google-cloud-location or --google-cloud-workspace-id sends requests to Claude Platform on Google Cloud, signed in with Google Application Default Credentials. Defaults to the credentials' project.",
+			Usage:   "Google Cloud project ID. Setting this, --google-cloud-location or --google-cloud-workspace-id sends requests to Claude Models on Google Cloud (Anthropic managed), signed in with Google Application Default Credentials. Defaults to the credentials' project.",
 			Sources: cli.EnvVars("ANTHROPIC_GOOGLE_CLOUD_PROJECT"),
 		},
 		&cli.StringFlag{
 			Name:    "google-cloud-location",
-			Usage:   "Google Cloud location for Claude Platform on Google Cloud (default: global).",
+			Usage:   "Google Cloud location for Claude Models on Google Cloud (Anthropic managed). Defaults to global.",
 			Sources: cli.EnvVars("ANTHROPIC_GOOGLE_CLOUD_LOCATION"),
 		},
 		&cli.StringFlag{
 			Name:    "google-cloud-workspace-id",
-			Usage:   "Workspace ID (wrkspc_...) to address on Claude Platform on Google Cloud. It is part of the gateway URL there, so --workspace-id is not needed.",
+			Usage:   "Workspace ID (wrkspc_...) to address on Claude Models on Google Cloud (Anthropic managed). It is part of the gateway URL there, so --workspace-id is not needed.",
 			Sources: cli.EnvVars("ANTHROPIC_GOOGLE_CLOUD_WORKSPACE_ID"),
 		},
 		&cli.StringFlag{
 			Name:    "google-cloud-base-url",
-			Usage:   "Override the gateway URL for Claude Platform on Google Cloud, once another --google-cloud-* flag has selected it. Google credentials are sent only here or to the gateway, never to --base-url.",
+			Usage:   "Override the gateway URL for Claude Models on Google Cloud (Anthropic managed), once another --google-cloud-* flag has selected it. Google credentials are sent only here or to the gateway, never to --base-url.",
 			Sources: cli.EnvVars("ANTHROPIC_GOOGLE_CLOUD_BASE_URL"),
+		},
+		&cli.StringFlag{
+			Name:  "aws-region",
+			Usage: "AWS region for Claude Platform on AWS. Setting this, --aws-workspace-id or an AWS API key sends requests to Claude Platform on AWS. Without an API key they are signed with AWS credentials from the default credential chain. Defaults to AWS_REGION, then AWS_DEFAULT_REGION.",
+		},
+		&cli.StringFlag{
+			Name:    "aws-workspace-id",
+			Usage:   "Workspace ID (wrkspc_...) to address on Claude Platform on AWS. It is sent as the anthropic-workspace-id header there, so --workspace-id is not needed.",
+			Sources: cli.EnvVars("ANTHROPIC_AWS_WORKSPACE_ID"),
+		},
+		&cli.BoolFlag{
+			Name:  "aws-api-key-stdin",
+			Usage: "Read an API key for Claude Platform on AWS from standard input, instead of signing with AWS credentials (or set ANTHROPIC_AWS_API_KEY). Consumes stdin, so the request body must come from flags.",
+		},
+		&cli.StringFlag{
+			Name:    "aws-base-url",
+			Usage:   "Override the gateway URL for Claude Platform on AWS, once --aws-region, --aws-workspace-id or an AWS API key has selected it. AWS credentials are sent only here or to the gateway, never to --base-url.",
+			Sources: cli.EnvVars("ANTHROPIC_AWS_BASE_URL"),
 		},
 	)
 }

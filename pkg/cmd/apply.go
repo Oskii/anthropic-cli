@@ -13,13 +13,13 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/anthropics/anthropic-cli/internal/debugmiddleware"
-	"github.com/anthropics/anthropic-cli/internal/declarative/claude"
-	"github.com/anthropics/anthropic-cli/internal/declarative/core"
-	"github.com/anthropics/anthropic-cli/internal/declarative/render"
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/config"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-cli/v2/internal/debugmiddleware"
+	"github.com/anthropics/anthropic-cli/v2/internal/declarative/claude"
+	"github.com/anthropics/anthropic-cli/v2/internal/declarative/core"
+	"github.com/anthropics/anthropic-cli/v2/internal/declarative/render"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/config"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 	"github.com/charmbracelet/x/term"
 	"github.com/urfave/cli/v3"
 )
@@ -83,7 +83,14 @@ Nothing is changed until you approve the plan.`,
 // tracked sources, and plans. Once planned, the plan is always shown. A dry
 // run, a blocked plan, a plan with no work or a declined prompt stops there;
 // anything else is applied and the lockfile updated as it goes.
-func handleApply(ctx context.Context, cmd *cli.Command) error {
+func handleApply(ctx context.Context, cmd *cli.Command) (err error) {
+	// Errors can name files and lockfile entries from the repository, so
+	// escape them before they are printed.
+	defer func() {
+		if err != nil {
+			err = applyError{err}
+		}
+	}()
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
@@ -226,6 +233,17 @@ func handleApply(ctx context.Context, cmd *cli.Command) error {
 	return err
 }
 
+// applyError prints an error with control characters escaped and continuation
+// lines indented, so a newline in a file name can't forge a line of output. It
+// unwraps to the original so errors.Is and errors.As still work.
+type applyError struct{ err error }
+
+func (e applyError) Error() string {
+	return strings.ReplaceAll(render.EscapeLines(e.err.Error()), "\n", "\n    ")
+}
+
+func (e applyError) Unwrap() error { return e.err }
+
 // loadApplyLockfile opens the lockfile --lock-file names, or else finds
 // claude-lock.json by walking up from the working directory.
 func loadApplyLockfile(registry *core.Registry, cmd *cli.Command) (*core.Lockfile, error) {
@@ -269,11 +287,14 @@ func identifyOrigin(ctx context.Context, cmd *cli.Command, sdk anthropic.Client,
 }
 
 // currentBaseURL resolves the API host by the client's own precedence: the
-// Google Cloud tier's own host when that tier is in use, else flag, then
-// environment, then the profile in use, then the SDK default.
+// Google Cloud or AWS tier's own host when that tier is in use, else flag,
+// then environment, then the profile in use, then the SDK default.
 func currentBaseURL(cmd *cli.Command) string {
 	if googleCloudInUse(cmd) {
 		return googleCloudFromRoot(cmd.Root()).host()
+	}
+	if awsInUse(cmd) {
+		return awsFromRoot(cmd.Root()).host()
 	}
 	if flag := cmd.String("base-url"); flag != "" {
 		return flag
@@ -289,14 +310,14 @@ func currentBaseURL(cmd *cli.Command) string {
 
 // profileInUse returns the active profile's config only when that profile is
 // what requests will authenticate with — by the client's own precedence, an
-// API key, auth token, complete federation config or Google Cloud settings
-// from flags or the environment win over an implicit profile.
+// API key, auth token, complete federation config, or Google Cloud or AWS
+// settings from flags or the environment win over an implicit profile.
 func profileInUse(cmd *cli.Command) *config.Config {
 	cfg, explicit := loadProfileIfUsable(cmd)
 	root := cmd.Root()
 	fed := federationFromRoot(root)
-	_, apiKeySet := directCredential(root, "api-key")
-	_, authTokenSet := directCredential(root, "auth-token")
+	_, apiKeySet := directCredential("api-key")
+	_, authTokenSet := directCredential("auth-token")
 	switch {
 	case cfg == nil, apiKeySet, authTokenSet:
 		return nil
@@ -304,7 +325,7 @@ func profileInUse(cmd *cli.Command) *config.Config {
 		return cfg
 	case fed.AnySet() && len(fed.Missing()) == 0:
 		return nil
-	case googleCloudFromRoot(root).AnySet():
+	case googleCloudFromRoot(root).AnySet(), awsFromRoot(root).AnySet():
 		return nil
 	}
 	return cfg
@@ -314,9 +335,24 @@ func profileInUse(cmd *cli.Command) *config.Config {
 // Google Cloud tier, by the client's own precedence.
 func googleCloudInUse(cmd *cli.Command) bool {
 	root := cmd.Root()
-	_, apiKeySet := directCredential(root, "api-key")
-	_, authTokenSet := directCredential(root, "auth-token")
+	_, apiKeySet := directCredential("api-key")
+	_, authTokenSet := directCredential("auth-token")
 	if apiKeySet || authTokenSet || !googleCloudFromRoot(root).AnySet() {
+		return false
+	}
+	if cfg, explicit := loadProfileIfUsable(cmd); cfg != nil && explicit {
+		return false
+	}
+	return !federationFromRoot(root).AnySet()
+}
+
+// awsInUse reports whether requests will authenticate through the AWS tier,
+// by the client's own precedence.
+func awsInUse(cmd *cli.Command) bool {
+	root := cmd.Root()
+	_, apiKeySet := directCredential("api-key")
+	_, authTokenSet := directCredential("auth-token")
+	if apiKeySet || authTokenSet || !awsFromRoot(root).AnySet() || googleCloudFromRoot(root).AnySet() {
 		return false
 	}
 	if cfg, explicit := loadProfileIfUsable(cmd); cfg != nil && explicit {
@@ -342,8 +378,8 @@ func describeOrigin(cmd *cli.Command, o core.Origin) render.OriginSummary {
 	c := render.OriginSummary{Host: hostOf(o.BaseURL), Organization: o.OrganizationID, Workspace: o.WorkspaceID}
 	root := cmd.Root()
 	cfg := profileInUse(cmd)
-	_, apiKeySet := directCredential(root, "api-key")
-	_, authTokenSet := directCredential(root, "auth-token")
+	_, apiKeySet := directCredential("api-key")
+	_, authTokenSet := directCredential("auth-token")
 	switch {
 	case cfg != nil:
 		name, dir := activeProfile(cmd)
@@ -357,11 +393,15 @@ func describeOrigin(cmd *cli.Command, o core.Origin) render.OriginSummary {
 			}
 		}
 	case apiKeySet:
-		c.Credentials = "API key (--api-key / ANTHROPIC_API_KEY)"
+		c.Credentials = "API key (" + credentialSourceLabel(root, "api-key") + ")"
 	case authTokenSet:
-		c.Credentials = "auth token (--auth-token / ANTHROPIC_AUTH_TOKEN)"
+		c.Credentials = "auth token (" + credentialSourceLabel(root, "auth-token") + ")"
 	case googleCloudInUse(cmd):
 		c.Credentials = "Google Cloud (Application Default Credentials)"
+	case awsInUse(cmd) && awsFromRoot(root).APIKey != "":
+		c.Credentials = "AWS (API key)"
+	case awsInUse(cmd):
+		c.Credentials = "AWS (AWS credential chain)"
 	default:
 		c.Credentials = "workload identity federation"
 	}

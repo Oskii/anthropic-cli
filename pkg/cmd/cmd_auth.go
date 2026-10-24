@@ -24,7 +24,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go/config"
+	"github.com/anthropics/anthropic-sdk-go/v2/config"
 	"github.com/urfave/cli/v3"
 )
 
@@ -52,9 +52,8 @@ type tokenResponse struct {
 	ExpiresIn    int    `json:"expires_in"`
 	TokenType    string `json:"token_type"`
 	Scope        string `json:"scope"`
-	// Organization, Account, and Workspace come from oauth-server's
-	// token_metadata_extension hook (api/oauth_server/oauth/grants/extensions.py)
-	// on the AuthorizationCode and RefreshToken grants. Workspace is
+	// Organization, Account, and Workspace are returned on the
+	// authorization code and refresh token grants. Workspace is
 	// populated when the authorization was bound to one (either via the
 	// authorize URL workspace_id param or via the Console picker), and
 	// carries the tagged `wrkspc_...` form so it round-trips with the
@@ -275,7 +274,7 @@ func authLogin(ctx context.Context, c *cli.Command) error {
 			params.Set("workspace_id", workspaceID)
 		}
 		if wantOrg != "" {
-			// Console's OAuthConsentPage reads ?orgUUID= and auto-switches to
+			// The consent page reads ?orgUUID= and auto-switches to
 			// that org (skipping the switcher) when the signed-in account is a
 			// member, or shows a no-access error when not. The mismatch guard
 			// below against the token response's organization.uuid remains the
@@ -410,7 +409,7 @@ func authLogin(ctx context.Context, c *cli.Command) error {
 
 	gotOrg := tok.Organization.UUID
 	if wantOrg != "" && gotOrg != "" && wantOrg != gotOrg {
-		// Console's OAuthConsentPage enforces ?orgUUID (auto-switches members,
+		// The consent page enforces ?orgUUID (auto-switches members,
 		// blocks non-members), so a post-exchange mismatch should only happen
 		// if the authorize URL was hand-edited or via a Console bug. Warn and
 		// proceed rather than discarding a valid token.
@@ -678,17 +677,17 @@ func authStatus(ctx context.Context, c *cli.Command) error {
 	profileTokenPresent := cfgErr == nil && cfg != nil && credsErr == nil && creds.AccessToken != ""
 
 	root := c.Root()
-	warnIfCredentialOnCommandLine(os.Stderr)
 	if err := applyStdinCredential(root); err != nil {
 		return err
 	}
-	apiKey, apiKeySet := directCredential(root, "api-key")
-	authToken, authTokenSet := directCredential(root, "auth-token")
+	apiKey, apiKeySet := directCredential("api-key")
+	authToken, authTokenSet := directCredential("auth-token")
 	fed := federationFromRoot(root)
 	fedReady := fed.AnySet() && len(fed.Missing()) == 0
 	fedMissing := fed.Missing()
 	gc := googleCloudFromRoot(root)
 	gcSet := gc.AnySet()
+	aw := awsFromRoot(root)
 
 	// Credential tier mirrors getDefaultRequestOptions exactly. Note that
 	// partial federation config (fed.AnySet() but not fedReady) does NOT
@@ -707,13 +706,15 @@ func authStatus(ctx context.Context, c *cli.Command) error {
 		credWinner = 4
 	case gcSet:
 		credWinner = 5
-	case profileTokenPresent:
+	case aw.AnySet():
 		credWinner = 6
+	case profileTokenPresent:
+		credWinner = 7
 	}
 
 	fmt.Fprintln(out)
 	fmt.Fprintln(out, "Credentials")
-	if credWinner == 3 || credWinner == 6 {
+	if credWinner == 3 || credWinner == 7 {
 		if who := loggedInSummary(creds.OrganizationName, creds.AccountEmail); who != "" {
 			fmt.Fprintf(out, "  Logged in %s\n", who)
 		}
@@ -747,7 +748,7 @@ func authStatus(ctx context.Context, c *cli.Command) error {
 		} else {
 			profileLabel += " [via active_config]"
 		}
-		writeRow(out, credWinner == 3 || credWinner == 6, profileLabel, formatSecret(creds.AccessToken, true))
+		writeRow(out, credWinner == 3 || credWinner == 7, profileLabel, formatSecret(creds.AccessToken, true))
 		exp := time.Unix(creds.ExpiresAt, 0)
 		writeDetail(out, "expires", fmt.Sprintf("%s (%s)", exp.Format(time.RFC3339), formatRemaining(time.Until(exp))))
 		// Prefer the credentials file's scope (what the live token was granted)
@@ -791,18 +792,26 @@ func authStatus(ctx context.Context, c *cli.Command) error {
 		writeDetail(out, "location", cmp.Or(gc.Location, "global"))
 		writeDetail(out, "workspace_id", cmp.Or(gc.WorkspaceID, "(not set)"))
 	}
+	if aw.AnySet() {
+		if aw.APIKey != "" {
+			writeRow(out, credWinner == 6, "AWS (API key, "+aw.apiKeySource(root)+")", formatSecret(aw.APIKey, true))
+		} else {
+			writeRow(out, credWinner == 6, "AWS", "AWS credential chain (request signing)")
+		}
+		writeDetail(out, "region", cmp.Or(aw.Region, "(from AWS_REGION or AWS_DEFAULT_REGION)"))
+		writeDetail(out, "workspace_id", cmp.Or(aw.WorkspaceID, "(not set)"))
+	}
 
 	// Surface the surprising-override case: the user ran `ant auth login` but
 	// has a credential env var set that silently beats the profile on every
-	// request.
-	// A credential piped via --api-key-stdin / --auth-token-stdin is a
+	// request. A credential piped via --api-key-stdin / --auth-token-stdin is a
 	// per-invocation choice, not an ambient override, so it doesn't warn.
 	envOverride := ""
 	switch {
-	case apiKeySet && !credentialFromStdin(root, "api-key"):
-		envOverride = "ANTHROPIC_API_KEY"
-	case !apiKeySet && authTokenSet && !credentialFromStdin(root, "auth-token"):
-		envOverride = "ANTHROPIC_AUTH_TOKEN"
+	case apiKeySet:
+		envOverride = credentialEnvVar(root, "api-key")
+	case authTokenSet:
+		envOverride = credentialEnvVar(root, "auth-token")
 	}
 	if profileTokenPresent && envOverride != "" {
 		fmt.Fprintln(out)
@@ -836,6 +845,9 @@ func authStatus(ctx context.Context, c *cli.Command) error {
 		// The Google Cloud tier takes only its own base URL: the rows below
 		// name hosts for Anthropic credentials and are not in play.
 		baseWinner = 5
+	case credWinner == 6:
+		// Likewise for AWS.
+		baseWinner = 6
 	case flagBaseURL != "":
 		baseWinner = 1
 	case envBaseURL != "":
@@ -861,6 +873,13 @@ func authStatus(ctx context.Context, c *cli.Command) error {
 			label = "--google-cloud-base-url / ANTHROPIC_GOOGLE_CLOUD_BASE_URL"
 		}
 		writeRow(out, true, label, gc.host())
+	}
+	if baseWinner == 6 {
+		label := "AWS gateway"
+		if aw.BaseURL != "" {
+			label = "--aws-base-url / ANTHROPIC_AWS_BASE_URL"
+		}
+		writeRow(out, true, label, cmp.Or(aw.host(), "(set --aws-region)"))
 	}
 
 	fmt.Fprintln(out)
@@ -907,9 +926,12 @@ func authStatus(ctx context.Context, c *cli.Command) error {
 	credsWsName := creds.WorkspaceName
 	wsFromFlag := root.IsSet("workspace-id") && root.String("workspace-id") != ""
 	if wsFromFlag {
-		writeRow(out, true, "--workspace-id / ANTHROPIC_WORKSPACE_ID", root.String("workspace-id"))
+		writeRow(out, credWinner != 6, "--workspace-id / ANTHROPIC_WORKSPACE_ID", root.String("workspace-id"))
 	}
 	switch {
+	case credWinner == 6:
+		// The AWS tier sends only its own workspace header.
+		writeRow(out, true, "AWS workspace", cmp.Or(aw.WorkspaceID, "(not set)"))
 	case wsFromFlag:
 		if credsWs != "" {
 			credsLabel := credsWs
@@ -1161,10 +1183,8 @@ func readFullCredentials(cfg *config.Config, dir, profile string) (config.Creden
 }
 
 // refreshAccessToken redeems a refresh_token at /v1/oauth/token. Unlike
-// [exchangeCode], this sends a JSON body with the oauth-2025-04-20 beta —
-// the Python oauth-server requires that beta on the refresh_token grant for
-// user_oauth credentials. The federation beta is intentionally absent so the
-// request is not gateway-routed to api-go's jwt-bearer-only handler.
+// [exchangeCode], it sends a JSON body with the oauth-2025-04-20 beta, which
+// this grant requires, and never the federation beta.
 func refreshAccessToken(ctx context.Context, baseURL, clientID, refreshToken string) (*tokenResponse, error) {
 	if err := config.RequireSecureTokenEndpoint(baseURL); err != nil {
 		return nil, err
@@ -1274,16 +1294,9 @@ func waitForCallback(ctx context.Context, listener net.Listener, wantState strin
 }
 
 // exchangeCode redeems an authorization_code at /v1/oauth/token. It uses
-// form-encoding and no anthropic-beta header so the request lands on the
-// Python oauth_server (the established Claude Code path). The
-// oidc-federation-2026-04-01 beta header would route to api-go's userauth
-// handler, which currently only implements the jwt-bearer grant and rejects
-// authorization_code (api-go/core/betagating/interceptor.go).
-//
-// The Python oauth_server's AuthCodeTokenRequest model requires `state` on
-// the token exchange (not just the authorize redirect) as a bound CSRF
-// check across both legs — omitting it returns a 400 with
-// `oauth_request_parse_error`.
+// form encoding and no anthropic-beta header, because the token endpoint
+// rejects this grant with the federation beta. The exchange must repeat
+// `state`; omitting it returns a 400 with `oauth_request_parse_error`.
 func exchangeCode(ctx context.Context, baseURL, clientID, code, verifier, redirectURI, state string, debug bool) (*tokenResponse, error) {
 	if err := config.RequireSecureTokenEndpoint(baseURL); err != nil {
 		return nil, err

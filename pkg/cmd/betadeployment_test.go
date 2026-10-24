@@ -3,15 +3,16 @@ package cmd
 import (
 	"testing"
 
-	"github.com/anthropics/anthropic-cli/internal/mocktest"
-	"github.com/anthropics/anthropic-cli/internal/requestflag"
+	"github.com/anthropics/anthropic-cli/v2/internal/mocktest"
+	"github.com/anthropics/anthropic-cli/v2/internal/requestflag"
 )
 
 func TestBetaDeploymentsCreate(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:deployments", "create",
 			"--agent", "string",
 			"--environment-id", "x",
@@ -35,7 +36,7 @@ func TestBetaDeploymentsCreate(t *testing.T) {
 		// Alternative argument passing style using inner flags
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:deployments", "create",
 			"--agent", "string",
 			"--environment-id", "x",
@@ -86,7 +87,7 @@ func TestBetaDeploymentsCreate(t *testing.T) {
 			"  - string\n")
 		mocktest.TestRunMockTestWithPipeAndFlags(
 			t, pipeData,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:deployments", "create",
 			"--beta", "message-batches-2024-09-24",
 			"--workspace-id", "wrkspc_011CZkZaBF1tNoB5wlCeusgy",
@@ -95,10 +96,11 @@ func TestBetaDeploymentsCreate(t *testing.T) {
 }
 
 func TestBetaDeploymentsRetrieve(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:deployments", "retrieve",
 			"--deployment-id", "depl_011CZkZcDH3vPqd7xnEfwTai",
 			"--beta", "message-batches-2024-09-24",
@@ -108,10 +110,11 @@ func TestBetaDeploymentsRetrieve(t *testing.T) {
 }
 
 func TestBetaDeploymentsUpdate(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:deployments", "update",
 			"--deployment-id", "depl_011CZkZcDH3vPqd7xnEfwTai",
 			"--agent", "string",
@@ -136,7 +139,7 @@ func TestBetaDeploymentsUpdate(t *testing.T) {
 		// Alternative argument passing style using inner flags
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:deployments", "update",
 			"--deployment-id", "depl_011CZkZcDH3vPqd7xnEfwTai",
 			"--agent", "string",
@@ -188,7 +191,7 @@ func TestBetaDeploymentsUpdate(t *testing.T) {
 			"  - string\n")
 		mocktest.TestRunMockTestWithPipeAndFlags(
 			t, pipeData,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:deployments", "update",
 			"--deployment-id", "depl_011CZkZcDH3vPqd7xnEfwTai",
 			"--beta", "message-batches-2024-09-24",
@@ -198,10 +201,11 @@ func TestBetaDeploymentsUpdate(t *testing.T) {
 }
 
 func TestBetaDeploymentsList(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:deployments", "list",
 			"--max-items", "10",
 			"--agent-id", "agent_id",
@@ -218,10 +222,11 @@ func TestBetaDeploymentsList(t *testing.T) {
 }
 
 func TestBetaDeploymentsArchive(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:deployments", "archive",
 			"--deployment-id", "depl_011CZkZcDH3vPqd7xnEfwTai",
 			"--beta", "message-batches-2024-09-24",
@@ -231,10 +236,11 @@ func TestBetaDeploymentsArchive(t *testing.T) {
 }
 
 func TestBetaDeploymentsPause(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:deployments", "pause",
 			"--deployment-id", "depl_011CZkZcDH3vPqd7xnEfwTai",
 			"--beta", "message-batches-2024-09-24",
@@ -244,10 +250,11 @@ func TestBetaDeploymentsPause(t *testing.T) {
 }
 
 func TestBetaDeploymentsRun(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:deployments", "run",
 			"--deployment-id", "depl_011CZkZcDH3vPqd7xnEfwTai",
 			"--beta", "message-batches-2024-09-24",
@@ -257,10 +264,11 @@ func TestBetaDeploymentsRun(t *testing.T) {
 }
 
 func TestBetaDeploymentsUnpause(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:deployments", "unpause",
 			"--deployment-id", "depl_011CZkZcDH3vPqd7xnEfwTai",
 			"--beta", "message-batches-2024-09-24",

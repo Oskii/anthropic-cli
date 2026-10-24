@@ -3,14 +3,61 @@ package cmd
 import (
 	"testing"
 
-	"github.com/anthropics/anthropic-cli/internal/mocktest"
+	"github.com/anthropics/anthropic-cli/v2/internal/mocktest"
+	"github.com/anthropics/anthropic-cli/v2/internal/requestflag"
 )
 
-func TestBetaOrganizationWorkspacesRateLimitsList(t *testing.T) {
+func TestBetaOrganizationWorkspacesRateLimitsUpdate(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
+			"beta:organization:workspaces:rate-limits", "update",
+			"--workspace-id", "workspace_id",
+			"--rate-limit-id", "rate_limit_id",
+			"--limit", "{type: fast_itpmca, value: 0}",
+		)
+	})
+
+	t.Run("inner flags", func(t *testing.T) {
+		// Check that inner flags have been set up correctly
+		requestflag.CheckInnerFlags(betaOrganizationWorkspacesRateLimitsUpdate)
+
+		// Alternative argument passing style using inner flags
+		mocktest.TestRunMockTestWithFlags(
+			t,
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
+			"beta:organization:workspaces:rate-limits", "update",
+			"--workspace-id", "workspace_id",
+			"--rate-limit-id", "rate_limit_id",
+			"--limit.type", "fast_itpmca",
+			"--limit.value", "0",
+		)
+	})
+
+	t.Run("piping data", func(t *testing.T) {
+		// Test piping YAML data over stdin
+		pipeData := []byte("" +
+			"limits:\n" +
+			"  - type: fast_itpmca\n" +
+			"    value: 0\n")
+		mocktest.TestRunMockTestWithPipeAndFlags(
+			t, pipeData,
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
+			"beta:organization:workspaces:rate-limits", "update",
+			"--workspace-id", "workspace_id",
+			"--rate-limit-id", "rate_limit_id",
+		)
+	})
+}
+
+func TestBetaOrganizationWorkspacesRateLimitsList(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
+	t.Run("regular flags", func(t *testing.T) {
+		mocktest.TestRunMockTestWithFlags(
+			t,
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:organization:workspaces:rate-limits", "list",
 			"--max-items", "10",
 			"--workspace-id", "workspace_id",

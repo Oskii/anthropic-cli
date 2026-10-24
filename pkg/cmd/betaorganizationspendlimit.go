@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/anthropics/anthropic-cli/internal/apiquery"
-	"github.com/anthropics/anthropic-cli/internal/requestflag"
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-cli/v2/internal/apiquery"
+	"github.com/anthropics/anthropic-cli/v2/internal/requestflag"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 	"github.com/tidwall/gjson"
 	"github.com/urfave/cli/v3"
 )
@@ -46,8 +46,13 @@ var betaOrganizationSpendLimitsList = cli.Command{
 		},
 		&requestflag.Flag[[]string]{
 			Name:      "scope-type",
-			Usage:     "Return only limits with these scope types. A Claude Console organization has `organization` and `workspace` limits; a Claude Enterprise organization has `organization`, `seat_tier`, `rbac_group`, `organization_service` and `user` limits. Omit for all.",
+			Usage:     "Return only limits with these scope types. Omit for all. A scope type that doesn't apply to the organization gets a 400 error.",
 			QueryPath: "scope_type",
+		},
+		&requestflag.Flag[string]{
+			Name:      "workspace-id",
+			Usage:     "Return only the limits whose `scope.workspace_id` is this workspace (`wrkspc_...`). Claude Console organizations only; other organizations get a 400 error.",
+			QueryPath: "workspace_id",
 		},
 		&requestflag.Flag[[]string]{
 			Name:       "beta",

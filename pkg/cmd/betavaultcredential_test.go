@@ -3,14 +3,15 @@ package cmd
 import (
 	"testing"
 
-	"github.com/anthropics/anthropic-cli/internal/mocktest"
+	"github.com/anthropics/anthropic-cli/v2/internal/mocktest"
 )
 
 func TestBetaVaultsCredentialsCreate(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:vaults:credentials", "create",
 			"--vault-id", "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			"--auth", "{token: bearer_exampletoken, mcp_server_url: https://example-server.modelcontextprotocol.io/sse, type: static_bearer}",
@@ -33,7 +34,7 @@ func TestBetaVaultsCredentialsCreate(t *testing.T) {
 			"  environment: production\n")
 		mocktest.TestRunMockTestWithPipeAndFlags(
 			t, pipeData,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:vaults:credentials", "create",
 			"--vault-id", "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			"--beta", "message-batches-2024-09-24",
@@ -43,10 +44,11 @@ func TestBetaVaultsCredentialsCreate(t *testing.T) {
 }
 
 func TestBetaVaultsCredentialsRetrieve(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:vaults:credentials", "retrieve",
 			"--vault-id", "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			"--credential-id", "vcrd_011CZkZEMt8gZan2iYPQfSkw",
@@ -57,10 +59,11 @@ func TestBetaVaultsCredentialsRetrieve(t *testing.T) {
 }
 
 func TestBetaVaultsCredentialsUpdate(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:vaults:credentials", "update",
 			"--vault-id", "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			"--credential-id", "vcrd_011CZkZEMt8gZan2iYPQfSkw",
@@ -90,7 +93,7 @@ func TestBetaVaultsCredentialsUpdate(t *testing.T) {
 			"  environment: production\n")
 		mocktest.TestRunMockTestWithPipeAndFlags(
 			t, pipeData,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:vaults:credentials", "update",
 			"--vault-id", "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			"--credential-id", "vcrd_011CZkZEMt8gZan2iYPQfSkw",
@@ -101,10 +104,11 @@ func TestBetaVaultsCredentialsUpdate(t *testing.T) {
 }
 
 func TestBetaVaultsCredentialsList(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:vaults:credentials", "list",
 			"--max-items", "10",
 			"--vault-id", "vlt_011CZkZDLs7fYzm1hXNPeRjv",
@@ -118,10 +122,11 @@ func TestBetaVaultsCredentialsList(t *testing.T) {
 }
 
 func TestBetaVaultsCredentialsDelete(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:vaults:credentials", "delete",
 			"--vault-id", "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			"--credential-id", "vcrd_011CZkZEMt8gZan2iYPQfSkw",
@@ -132,10 +137,11 @@ func TestBetaVaultsCredentialsDelete(t *testing.T) {
 }
 
 func TestBetaVaultsCredentialsArchive(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:vaults:credentials", "archive",
 			"--vault-id", "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			"--credential-id", "vcrd_011CZkZEMt8gZan2iYPQfSkw",
@@ -146,10 +152,11 @@ func TestBetaVaultsCredentialsArchive(t *testing.T) {
 }
 
 func TestBetaVaultsCredentialsMCPOAuthValidate(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:vaults:credentials", "mcp-oauth-validate",
 			"--vault-id", "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			"--credential-id", "vcrd_011CZkZEMt8gZan2iYPQfSkw",

@@ -3,14 +3,15 @@ package cmd
 import (
 	"testing"
 
-	"github.com/anthropics/anthropic-cli/internal/mocktest"
+	"github.com/anthropics/anthropic-cli/v2/internal/mocktest"
 )
 
 func TestBetaOrganizationPluginsInstallationSettingsList(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:organization:plugins:installation-settings", "list",
 			"--max-items", "10",
 			"--plugin-id", "plugin_id",
@@ -24,10 +25,11 @@ func TestBetaOrganizationPluginsInstallationSettingsList(t *testing.T) {
 }
 
 func TestBetaOrganizationPluginsInstallationSettingsRemove(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:organization:plugins:installation-settings", "remove",
 			"--plugin-id", "plugin_id",
 			"--target", "target",
@@ -37,10 +39,11 @@ func TestBetaOrganizationPluginsInstallationSettingsRemove(t *testing.T) {
 }
 
 func TestBetaOrganizationPluginsInstallationSettingsSet(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:organization:plugins:installation-settings", "set",
 			"--plugin-id", "plugin_id",
 			"--target", "target",
@@ -54,7 +57,7 @@ func TestBetaOrganizationPluginsInstallationSettingsSet(t *testing.T) {
 		pipeData := []byte("installation_preference: required")
 		mocktest.TestRunMockTestWithPipeAndFlags(
 			t, pipeData,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:organization:plugins:installation-settings", "set",
 			"--plugin-id", "plugin_id",
 			"--target", "target",

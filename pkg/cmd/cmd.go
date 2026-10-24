@@ -10,8 +10,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/anthropics/anthropic-cli/internal/autocomplete"
-	"github.com/anthropics/anthropic-cli/internal/requestflag"
+	"github.com/anthropics/anthropic-cli/v2/internal/autocomplete"
+	"github.com/anthropics/anthropic-cli/v2/internal/requestflag"
 	docs "github.com/urfave/cli-docs/v3"
 	"github.com/urfave/cli/v3"
 )
@@ -77,27 +77,11 @@ func init() {
 				Usage:   "If the result is a string, print it without JSON quotes. This can be useful for making output transforms talk to non-JSON-based systems.",
 			},
 			&requestflag.Flag[string]{
-				Name:    "api-key",
-				Sources: cli.EnvVars("ANTHROPIC_API_KEY"),
-			},
-			&requestflag.Flag[string]{
-				Name:    "auth-token",
-				Sources: cli.EnvVars("ANTHROPIC_AUTH_TOKEN"),
-			},
-			&requestflag.Flag[string]{
 				Name:    "webhook-key",
 				Sources: cli.EnvVars("ANTHROPIC_WEBHOOK_SIGNING_KEY"),
 			},
 		},
 		Commands: []*cli.Command{
-			{
-				Name:     "completions",
-				Category: "API RESOURCE",
-				Suggest:  true,
-				Commands: []*cli.Command{
-					&completionsCreate,
-				},
-			},
 			{
 				Name:     "messages",
 				Category: "API RESOURCE",
@@ -161,6 +145,26 @@ func init() {
 					&skillsVersionsRetrieve,
 					&skillsVersionsList,
 					&skillsVersionsDelete,
+				},
+			},
+			{
+				Name:     "user-profiles",
+				Category: "API RESOURCE",
+				Suggest:  true,
+				Commands: []*cli.Command{
+					&userProfilesCreate,
+					&userProfilesRetrieve,
+					&userProfilesUpdate,
+					&userProfilesList,
+					&userProfilesDelete,
+				},
+			},
+			{
+				Name:     "user-profiles:action-urls",
+				Category: "API RESOURCE",
+				Suggest:  true,
+				Commands: []*cli.Command{
+					&userProfilesActionURLsCreate,
 				},
 			},
 			{
@@ -289,6 +293,7 @@ func init() {
 				Category: "API RESOURCE",
 				Suggest:  true,
 				Commands: []*cli.Command{
+					&organizationWorkspacesRateLimitsUpdate,
 					&organizationWorkspacesRateLimitsList,
 				},
 			},
@@ -596,10 +601,19 @@ func init() {
 					&betaUserProfilesRetrieve,
 					&betaUserProfilesUpdate,
 					&betaUserProfilesList,
+					&betaUserProfilesDelete,
 					&betaUserProfilesCreateEnrollmentURL,
 				},
 			},
 			&workerCommand,
+			{
+				Name:     "beta:user-profiles:action-urls",
+				Category: "API RESOURCE",
+				Suggest:  true,
+				Commands: []*cli.Command{
+					&betaUserProfilesActionURLsCreate,
+				},
+			},
 			{
 				Name:     "beta:dreams",
 				Category: "API RESOURCE",
@@ -762,6 +776,7 @@ func init() {
 				Category: "API RESOURCE",
 				Suggest:  true,
 				Commands: []*cli.Command{
+					&betaOrganizationWorkspacesRateLimitsUpdate,
 					&betaOrganizationWorkspacesRateLimitsList,
 				},
 			},
@@ -860,6 +875,22 @@ func init() {
 				Suggest:  true,
 				Commands: []*cli.Command{
 					&betaOrganizationAnalyticsArtifactsList,
+				},
+			},
+			{
+				Name:     "beta:organization:analytics:usage",
+				Category: "API RESOURCE",
+				Suggest:  true,
+				Commands: []*cli.Command{
+					&betaOrganizationAnalyticsUsageList,
+				},
+			},
+			{
+				Name:     "beta:organization:analytics:cost",
+				Category: "API RESOURCE",
+				Suggest:  true,
+				Commands: []*cli.Command{
+					&betaOrganizationAnalyticsCostList,
 				},
 			},
 			{
@@ -1017,6 +1048,84 @@ func init() {
 				},
 			},
 			{
+				Name:     "beta:organization:telemetry-destinations",
+				Category: "API RESOURCE",
+				Suggest:  true,
+				Commands: []*cli.Command{
+					&betaOrganizationTelemetryDestinationsCreate,
+					&betaOrganizationTelemetryDestinationsRetrieve,
+					&betaOrganizationTelemetryDestinationsUpdate,
+					&betaOrganizationTelemetryDestinationsList,
+					&betaOrganizationTelemetryDestinationsDelete,
+					&betaOrganizationTelemetryDestinationsTest,
+				},
+			},
+			{
+				Name:     "beta:organization:telemetry-destinations:workspaces",
+				Category: "API RESOURCE",
+				Suggest:  true,
+				Commands: []*cli.Command{
+					&betaOrganizationTelemetryDestinationsWorkspacesList,
+					&betaOrganizationTelemetryDestinationsWorkspacesAdd,
+					&betaOrganizationTelemetryDestinationsWorkspacesRemove,
+				},
+			},
+			{
+				Name:     "beta:organization:webhooks",
+				Category: "API RESOURCE",
+				Suggest:  true,
+				Commands: []*cli.Command{
+					&betaOrganizationWebhooksCreate,
+					&betaOrganizationWebhooksRetrieve,
+					&betaOrganizationWebhooksUpdate,
+					&betaOrganizationWebhooksList,
+					&betaOrganizationWebhooksDelete,
+					&betaOrganizationWebhooksRegenerateSigningSecret,
+				},
+			},
+			{
+				Name:     "beta:organization:claude-tag:slack-channels",
+				Category: "API RESOURCE",
+				Suggest:  true,
+				Commands: []*cli.Command{
+					&betaOrganizationClaudeTagSlackChannelsCreate,
+					&betaOrganizationClaudeTagSlackChannelsRetrieve,
+					&betaOrganizationClaudeTagSlackChannelsUpdate,
+					&betaOrganizationClaudeTagSlackChannelsList,
+					&betaOrganizationClaudeTagSlackChannelsDelete,
+				},
+			},
+			{
+				Name:     "beta:organization:claude-tag:slack-workspaces",
+				Category: "API RESOURCE",
+				Suggest:  true,
+				Commands: []*cli.Command{
+					&betaOrganizationClaudeTagSlackWorkspacesRetrieve,
+					&betaOrganizationClaudeTagSlackWorkspacesUpdate,
+					&betaOrganizationClaudeTagSlackWorkspacesList,
+				},
+			},
+			{
+				Name:     "beta:organization:claude-tag:bundles",
+				Category: "API RESOURCE",
+				Suggest:  true,
+				Commands: []*cli.Command{
+					&betaOrganizationClaudeTagBundlesRetrieve,
+					&betaOrganizationClaudeTagBundlesList,
+				},
+			},
+			{
+				Name:     "beta:organization:claude-tag:bundles:targets",
+				Category: "API RESOURCE",
+				Suggest:  true,
+				Commands: []*cli.Command{
+					&betaOrganizationClaudeTagBundlesTargetsCreate,
+					&betaOrganizationClaudeTagBundlesTargetsRetrieve,
+					&betaOrganizationClaudeTagBundlesTargetsList,
+					&betaOrganizationClaudeTagBundlesTargetsDelete,
+				},
+			},
+			{
 				Name:            "@manpages",
 				Usage:           "Generate documentation for 'man'",
 				UsageText:       "ant @manpages [-o ant.1] [--gzip]",
@@ -1094,6 +1203,6 @@ func generateManpages(ctx context.Context, c *cli.Command) error {
 			return err
 		}
 	}
-	fmt.Printf("Wrote manpages to %s\n", dir)
+	fmt.Fprintf(c.Writer, "Wrote manpages to %s\n", dir)
 	return nil
 }

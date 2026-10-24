@@ -3,14 +3,15 @@ package cmd
 import (
 	"testing"
 
-	"github.com/anthropics/anthropic-cli/internal/mocktest"
+	"github.com/anthropics/anthropic-cli/v2/internal/mocktest"
 )
 
 func TestBetaVaultsCreate(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:vaults", "create",
 			"--display-name", "Example vault",
 			"--metadata", "{environment: production}",
@@ -27,7 +28,7 @@ func TestBetaVaultsCreate(t *testing.T) {
 			"  environment: production\n")
 		mocktest.TestRunMockTestWithPipeAndFlags(
 			t, pipeData,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:vaults", "create",
 			"--beta", "message-batches-2024-09-24",
 			"--workspace-id", "wrkspc_011CZkZaBF1tNoB5wlCeusgy",
@@ -36,10 +37,11 @@ func TestBetaVaultsCreate(t *testing.T) {
 }
 
 func TestBetaVaultsRetrieve(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:vaults", "retrieve",
 			"--vault-id", "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			"--beta", "message-batches-2024-09-24",
@@ -49,10 +51,11 @@ func TestBetaVaultsRetrieve(t *testing.T) {
 }
 
 func TestBetaVaultsUpdate(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:vaults", "update",
 			"--vault-id", "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			"--display-name", "Example vault",
@@ -70,7 +73,7 @@ func TestBetaVaultsUpdate(t *testing.T) {
 			"  environment: production\n")
 		mocktest.TestRunMockTestWithPipeAndFlags(
 			t, pipeData,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:vaults", "update",
 			"--vault-id", "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			"--beta", "message-batches-2024-09-24",
@@ -80,10 +83,11 @@ func TestBetaVaultsUpdate(t *testing.T) {
 }
 
 func TestBetaVaultsList(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:vaults", "list",
 			"--max-items", "10",
 			"--include-archived=true",
@@ -96,10 +100,11 @@ func TestBetaVaultsList(t *testing.T) {
 }
 
 func TestBetaVaultsDelete(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:vaults", "delete",
 			"--vault-id", "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			"--beta", "message-batches-2024-09-24",
@@ -109,10 +114,11 @@ func TestBetaVaultsDelete(t *testing.T) {
 }
 
 func TestBetaVaultsArchive(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:vaults", "archive",
 			"--vault-id", "vlt_011CZkZDLs7fYzm1hXNPeRjv",
 			"--beta", "message-batches-2024-09-24",

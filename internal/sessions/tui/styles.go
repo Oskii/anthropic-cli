@@ -3,7 +3,7 @@ package tui
 import (
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/anthropics/anthropic-cli/internal/sessions/timeline"
+	"github.com/anthropics/anthropic-cli/v2/internal/sessions/timeline"
 )
 
 // Colour roles mirror the web viewer's; everything it draws as a muted caption is dim.
@@ -40,8 +40,8 @@ var (
 )
 
 // toolGlyph is the symbol that marks a tool row, chosen by timeline.ToolKind.
-func toolGlyph(toolName string) string {
-	if glyph, ok := toolGlyphs[timeline.ToolKind(toolName)]; ok {
+func toolGlyph(use timeline.Event) string {
+	if glyph, ok := toolGlyphs[timeline.ToolKind(use)]; ok {
 		return glyph
 	}
 	return "⚙"

@@ -1,5 +1,184 @@
 # Changelog
 
+## [2.3.0](https://github.com/anthropics/anthropic-cli/compare/v2.2.0...v2.3.0) (2026-10-23)
+
+### Features
+
+* **api:** add Claude Tag endpoints for Claude Enterprise organizations
+
+
+### Bug Fixes
+
+* **cli:** escape terminal control sequences in rendered output
+
+
+### Chores
+
+* bump go sdk to v2.3.0
+* **client:** stop sending query params hardcoded in endpoint paths
+* **docs:** update descriptions of the per-user usage and cost reports
+* **internal:** check the repository by owner and public name in workflows
+* **internal:** read the Go SDK's repo name from a CI variable
+* **internal:** remove preview build upload from CI
+
+
+### Documentation
+
+* update the README and the example request
+
+## [2.2.0](https://github.com/anthropics/anthropic-cli/compare/v2.1.0...v2.2.0) (2026-10-23)
+
+### Features
+
+* **api:** add support for message threads
+* **api:** add usage and cost reports by dimension, mark older reports legacy
+
+
+### Bug Fixes
+
+* **apply:** print control characters in plan output, warnings and errors as visible escapes
+* **sessions:** show the full input of MCP and custom tool calls in the `--web` session viewer
+* **sessions:** show the full input of MCP and custom tool calls in the terminal view, including at its approval prompt
+* **sessions:** show the input fields a built-in tool's layout leaves out at the terminal view's approval prompt
+* **sessions:** in the terminal view, drop bidirectional control characters from session text, and show control and invisible characters in names and tool input as escapes such as `\x1b` or `\u200b`
+
+
+### Chores
+
+* bump go sdk to v2.2.0
+* **ci:** update the runner label for internal CI jobs
+* **docs:** fix usage and cost report examples and ending_at docs
+
+
+### Documentation
+
+* **google-cloud:** update the product name
+
+## [2.1.0](https://github.com/anthropics/anthropic-cli/compare/v2.0.0...v2.1.0) (2026-10-21)
+
+### Features
+
+* **api:** add enforcement status, actions and filter to user profiles
+
+
+### Chores
+
+* bump go sdk to v2.1.0
+
+## [2.0.0](https://github.com/anthropics/anthropic-cli/compare/v1.44.0...v2.0.0) (2026-10-21)
+
+### ⚠ BREAKING CHANGES
+
+* **api:** add support for new API version 2026-10-21
+
+### Features
+
+* **api:** add a workspace_id filter and the usage_tier scope type to list spend limits
+* **api:** add support for new API version 2026-10-21
+
+
+### Chores
+
+* bump go sdk to v2.0.0
+
+
+### Documentation
+
+* **api:** remove outdated system role note from messages description
+
+## [1.44.0](https://github.com/anthropics/anthropic-cli/compare/v1.43.0...v1.44.0) (2026-10-20)
+
+### Features
+
+* **api:** add org webhook endpoints and user profile enforcement events
+
+
+### Chores
+
+* bump go sdk to v1.84.0
+* **ci:** run the changelog check on a standard runner
+
+## [1.43.0](https://github.com/anthropics/anthropic-cli/compare/v1.42.0...v1.43.0) (2026-10-19)
+
+### Features
+
+* **api:** add workspace rate-limit updates to the Admin API
+* **api:** make User Profiles generally available
+* **auth:** the stderr note printed when `ANTHROPIC_API_KEY` or `ANTHROPIC_AUTH_TOKEN` overrides a profile now names the variable, the profile and the fix
+
+
+### Bug Fixes
+
+* **auth:** `auth status` no longer reports a credential passed as `--api-key` or `--auth-token` as an environment override
+* **client:** treat x-amz-security-token as a sensitive header
+
+
+### Chores
+
+* bump go sdk to v1.83.0
+* **ci:** skip the changelog check on draft pull requests
+* **ci:** update publish workflow
+* **docs:** add credential expiry descriptions to the Managed Agents API reference
+* **docs:** correct plugin manifest_version and reach descriptions
+* **docs:** improve Managed Agents memory store descriptions
+* **docs:** improve Managed Agents vault and credential descriptions
+
+## [1.42.0](https://github.com/anthropics/anthropic-cli/compare/v1.41.0...v1.42.0) (2026-10-15)
+
+### Features
+
+* **api:** add the speed parameter and usage.speed to Messages
+
+
+### Chores
+
+* bump go sdk to v1.82.0
+* **docs:** describe headers on Managed Agents and telemetry endpoints
+
+
+### Documentation
+
+* **api:** note that some models need a beta header to use speed
+
+## [1.41.0](https://github.com/anthropics/anthropic-cli/compare/v1.40.0...v1.41.0) (2026-10-14)
+
+### Features
+
+* **api:** add execution_identity to Managed Agents agents
+* **api:** add organization_type_not_supported error to spend limit lists
+* **api:** add telemetry destination test endpoint
+* **api:** add telemetry destinations to the Admin API
+* **apply:** resolve file paths in a deployment's vault_ids
+* **client:** add native support for OpenTelemetry tracing
+
+  Spans are exported when the `OTEL_EXPORTER_OTLP_ENDPOINT` or `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` environment variable is set, otherwise tracing is off. Learn more in the [documentation](https://platform.claude.com/docs/en/manage-claude/opentelemetry/sdk).
+
+
+### Bug Fixes
+
+* **apply:** accept null for a field that takes references
+* **apply:** clear a deployment's resources when its line is deleted
+* **apply:** clear a deployment's vault_ids when its line is deleted
+* **client:** treat proxy-authorization as a sensitive header
+
+
+### Chores
+
+* bump go sdk to v1.81.0
+* **docs:** correct prefill, thinking, fallback and model descriptions
+* **docs:** document the scope required to assign the managed role
+* **docs:** update model examples
+* include the license files in the published packages
+* **internal:** generate each resource's type beside its fields
+* **internal:** generate resource fields as a slice
+* **internal:** generate tables of resource fields
+* **internal:** narrow the tripwire test rule in the contributor guides
+
+
+### Documentation
+
+* **api:** clarify when custom tool results can be sent
+
 ## [1.40.0](https://github.com/anthropics/anthropic-cli/compare/v1.39.1...v1.40.0) (2026-10-09)
 
 ### Features

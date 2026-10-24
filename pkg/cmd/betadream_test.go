@@ -3,14 +3,15 @@ package cmd
 import (
 	"testing"
 
-	"github.com/anthropics/anthropic-cli/internal/mocktest"
+	"github.com/anthropics/anthropic-cli/v2/internal/mocktest"
 )
 
 func TestBetaDreamsCreate(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:dreams", "create",
 			"--input", "{memory_store_id: x, type: memory_store}",
 			"--model", "string",
@@ -33,7 +34,7 @@ func TestBetaDreamsCreate(t *testing.T) {
 			"  type: create_new\n")
 		mocktest.TestRunMockTestWithPipeAndFlags(
 			t, pipeData,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:dreams", "create",
 			"--beta", "message-batches-2024-09-24",
 			"--workspace-id", "wrkspc_011CZkZaBF1tNoB5wlCeusgy",
@@ -42,10 +43,11 @@ func TestBetaDreamsCreate(t *testing.T) {
 }
 
 func TestBetaDreamsRetrieve(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:dreams", "retrieve",
 			"--dream-id", "dream_id",
 			"--beta", "message-batches-2024-09-24",
@@ -55,10 +57,11 @@ func TestBetaDreamsRetrieve(t *testing.T) {
 }
 
 func TestBetaDreamsList(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:dreams", "list",
 			"--max-items", "10",
 			"--created-at-gt", "'2019-12-27T18:11:19.117Z'",
@@ -74,10 +77,11 @@ func TestBetaDreamsList(t *testing.T) {
 }
 
 func TestBetaDreamsArchive(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:dreams", "archive",
 			"--dream-id", "dream_id",
 			"--beta", "message-batches-2024-09-24",
@@ -87,10 +91,11 @@ func TestBetaDreamsArchive(t *testing.T) {
 }
 
 func TestBetaDreamsCancel(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:dreams", "cancel",
 			"--dream-id", "dream_id",
 			"--beta", "message-batches-2024-09-24",

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/v2"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textarea"
@@ -15,8 +15,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/anthropics/anthropic-cli/internal/sessions/live"
-	"github.com/anthropics/anthropic-cli/internal/sessions/timeline"
+	"github.com/anthropics/anthropic-cli/v2/internal/sessions/live"
+	"github.com/anthropics/anthropic-cli/v2/internal/sessions/timeline"
 )
 
 // model is the bubbletea model: everything on screen, and the session state it
@@ -240,7 +240,7 @@ func (m *model) applyUpdates(batch []live.Update) {
 
 // setSession takes the title and agent name for the status bar.
 func (m *model) setSession(sess *anthropic.BetaManagedAgentsSession) {
-	m.title, m.agent = oneLine(timeline.Sanitize(sess.Title)), oneLine(timeline.Sanitize(sess.Agent.Name))
+	m.title, m.agent = timeline.Name(sess.Title), timeline.Name(sess.Agent.Name)
 	if m.title == "" {
 		m.title = sess.ID
 	}

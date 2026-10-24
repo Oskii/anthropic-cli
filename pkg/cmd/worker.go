@@ -15,9 +15,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/lib/environments"
+	"github.com/anthropics/anthropic-sdk-go/v2"
+	"github.com/anthropics/anthropic-sdk-go/v2/lib/environments"
 	"github.com/urfave/cli/v3"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var workerCommand = cli.Command{
@@ -96,6 +97,11 @@ func handleWorkerPoll(ctx context.Context, cmd *cli.Command) error {
 
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
 	defer stop()
+
+	// One poll process handles many sessions, one after another, so its spans are
+	// not in the trace of the process that started it: each work item gets a
+	// root span of its own instead.
+	ctx = trace.ContextWithSpanContext(ctx, trace.SpanContext{})
 
 	maxIdle := cmd.Duration("max-idle")
 

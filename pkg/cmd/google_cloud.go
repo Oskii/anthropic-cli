@@ -7,8 +7,8 @@ import (
 	"io"
 	"sync"
 
-	"github.com/anthropics/anthropic-sdk-go/googlecloud"
-	"github.com/anthropics/anthropic-sdk-go/option"
+	"github.com/anthropics/anthropic-sdk-go/v2/googlecloud"
+	"github.com/anthropics/anthropic-sdk-go/v2/option"
 	"github.com/urfave/cli/v3"
 )
 
@@ -20,11 +20,11 @@ const googleCloudHost = "https://claude.googleapis.com"
 // by tests via a reset helper.
 var googleCloudBaseURLNoticeOnce sync.Once
 
-// googleCloud holds the inputs that address Claude Platform on Google Cloud.
-// The gateway URL and the Google credential are resolved by the SDK's
-// googlecloud package; this type is only the CLI's flag/env carrier plus the
-// "configured or not" classification used by `auth status` and the precedence
-// switch in getDefaultRequestOptions.
+// googleCloud holds the inputs that address Claude Models on Google Cloud
+// (Anthropic managed). The gateway URL and the Google credential are resolved
+// by the SDK's googlecloud package; this type is only the CLI's flag/env
+// carrier plus the "configured or not" classification used by `auth status`
+// and the precedence switch in getDefaultRequestOptions.
 type googleCloud struct {
 	// Project is the Google Cloud project ID. When empty the SDK falls back to
 	// GOOGLE_CLOUD_PROJECT, then to the project of the Application Default

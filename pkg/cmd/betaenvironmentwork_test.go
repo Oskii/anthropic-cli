@@ -3,14 +3,15 @@ package cmd
 import (
 	"testing"
 
-	"github.com/anthropics/anthropic-cli/internal/mocktest"
+	"github.com/anthropics/anthropic-cli/v2/internal/mocktest"
 )
 
 func TestBetaEnvironmentsWorkRetrieve(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:environments:work", "retrieve",
 			"--environment-id", "env_011CZkZ9X2dpNyB7HsEFoRfW",
 			"--work-id", "work_id",
@@ -21,10 +22,11 @@ func TestBetaEnvironmentsWorkRetrieve(t *testing.T) {
 }
 
 func TestBetaEnvironmentsWorkUpdate(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:environments:work", "update",
 			"--environment-id", "env_011CZkZ9X2dpNyB7HsEFoRfW",
 			"--work-id", "work_id",
@@ -41,7 +43,7 @@ func TestBetaEnvironmentsWorkUpdate(t *testing.T) {
 			"  foo: string\n")
 		mocktest.TestRunMockTestWithPipeAndFlags(
 			t, pipeData,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:environments:work", "update",
 			"--environment-id", "env_011CZkZ9X2dpNyB7HsEFoRfW",
 			"--work-id", "work_id",
@@ -52,10 +54,11 @@ func TestBetaEnvironmentsWorkUpdate(t *testing.T) {
 }
 
 func TestBetaEnvironmentsWorkList(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:environments:work", "list",
 			"--max-items", "10",
 			"--environment-id", "env_011CZkZ9X2dpNyB7HsEFoRfW",
@@ -67,10 +70,11 @@ func TestBetaEnvironmentsWorkList(t *testing.T) {
 }
 
 func TestBetaEnvironmentsWorkAck(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:environments:work", "ack",
 			"--environment-id", "env_011CZkZ9X2dpNyB7HsEFoRfW",
 			"--work-id", "work_id",
@@ -80,10 +84,11 @@ func TestBetaEnvironmentsWorkAck(t *testing.T) {
 }
 
 func TestBetaEnvironmentsWorkHeartbeat(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:environments:work", "heartbeat",
 			"--environment-id", "env_011CZkZ9X2dpNyB7HsEFoRfW",
 			"--work-id", "work_id",
@@ -95,10 +100,11 @@ func TestBetaEnvironmentsWorkHeartbeat(t *testing.T) {
 }
 
 func TestBetaEnvironmentsWorkPoll(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:environments:work", "poll",
 			"--environment-id", "env_011CZkZ9X2dpNyB7HsEFoRfW",
 			"--block-ms", "1",
@@ -110,10 +116,11 @@ func TestBetaEnvironmentsWorkPoll(t *testing.T) {
 }
 
 func TestBetaEnvironmentsWorkStats(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:environments:work", "stats",
 			"--environment-id", "env_011CZkZ9X2dpNyB7HsEFoRfW",
 			"--beta", "message-batches-2024-09-24",
@@ -123,10 +130,11 @@ func TestBetaEnvironmentsWorkStats(t *testing.T) {
 }
 
 func TestBetaEnvironmentsWorkStop(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:environments:work", "stop",
 			"--environment-id", "env_011CZkZ9X2dpNyB7HsEFoRfW",
 			"--work-id", "work_id",
@@ -141,7 +149,7 @@ func TestBetaEnvironmentsWorkStop(t *testing.T) {
 		pipeData := []byte("force: true")
 		mocktest.TestRunMockTestWithPipeAndFlags(
 			t, pipeData,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:environments:work", "stop",
 			"--environment-id", "env_011CZkZ9X2dpNyB7HsEFoRfW",
 			"--work-id", "work_id",

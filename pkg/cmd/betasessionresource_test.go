@@ -3,14 +3,15 @@ package cmd
 import (
 	"testing"
 
-	"github.com/anthropics/anthropic-cli/internal/mocktest"
+	"github.com/anthropics/anthropic-cli/v2/internal/mocktest"
 )
 
 func TestBetaSessionsResourcesRetrieve(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:sessions:resources", "retrieve",
 			"--session-id", "sesn_011CZkZAtmR3yMPDzynEDxu7",
 			"--resource-id", "sesrsc_011CZkZBJq5dWxk9fVLNcPht",
@@ -21,10 +22,11 @@ func TestBetaSessionsResourcesRetrieve(t *testing.T) {
 }
 
 func TestBetaSessionsResourcesUpdate(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:sessions:resources", "update",
 			"--session-id", "sesn_011CZkZAtmR3yMPDzynEDxu7",
 			"--resource-id", "sesrsc_011CZkZBJq5dWxk9fVLNcPht",
@@ -39,7 +41,7 @@ func TestBetaSessionsResourcesUpdate(t *testing.T) {
 		pipeData := []byte("authorization_token: ghp_exampletoken")
 		mocktest.TestRunMockTestWithPipeAndFlags(
 			t, pipeData,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:sessions:resources", "update",
 			"--session-id", "sesn_011CZkZAtmR3yMPDzynEDxu7",
 			"--resource-id", "sesrsc_011CZkZBJq5dWxk9fVLNcPht",
@@ -50,10 +52,11 @@ func TestBetaSessionsResourcesUpdate(t *testing.T) {
 }
 
 func TestBetaSessionsResourcesList(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:sessions:resources", "list",
 			"--max-items", "10",
 			"--session-id", "sesn_011CZkZAtmR3yMPDzynEDxu7",
@@ -66,10 +69,11 @@ func TestBetaSessionsResourcesList(t *testing.T) {
 }
 
 func TestBetaSessionsResourcesDelete(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:sessions:resources", "delete",
 			"--session-id", "sesn_011CZkZAtmR3yMPDzynEDxu7",
 			"--resource-id", "sesrsc_011CZkZBJq5dWxk9fVLNcPht",
@@ -80,10 +84,11 @@ func TestBetaSessionsResourcesDelete(t *testing.T) {
 }
 
 func TestBetaSessionsResourcesAdd(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "string")
 	t.Run("regular flags", func(t *testing.T) {
 		mocktest.TestRunMockTestWithFlags(
 			t,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:sessions:resources", "add",
 			"--session-id", "sesn_011CZkZAtmR3yMPDzynEDxu7",
 			"--file-id", "file_011CNha8iCJcU1wXNR6q4V8w",
@@ -102,7 +107,7 @@ func TestBetaSessionsResourcesAdd(t *testing.T) {
 			"mount_path: /uploads/receipt.pdf\n")
 		mocktest.TestRunMockTestWithPipeAndFlags(
 			t, pipeData,
-			"--api-key", "string",
+			"--base-url", mocktest.ServerWithQuery(t, "beta=true"),
 			"beta:sessions:resources", "add",
 			"--session-id", "sesn_011CZkZAtmR3yMPDzynEDxu7",
 			"--beta", "message-batches-2024-09-24",
